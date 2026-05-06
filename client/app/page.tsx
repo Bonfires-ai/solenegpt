@@ -121,17 +121,33 @@ export default function HomePage() {
       <div className="z-10 w-full flex md:flex-row flex-col justify-between text-[#B4BEC0] text-xs md:text-sm font-inter font-light py-6 md:px-16 px-8 gap-3 text-center md:text-left">
         <div>
           Made with {'<3'} by{' '}
-          <a href={personaConfig.footer.creditUrl} className="underline hover:text-[#A15EED] transition-colors">
+          <a
+            href={personaConfig.footer.creditUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-[#A15EED] transition-colors"
+          >
             {personaConfig.footer.credit}
           </a>{' '}
           and{' '}
-          <a href="https://bonfires.ai/" className="underline hover:text-[#A15EED] transition-colors">
+          <a
+            href="https://bonfires.ai/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-[#A15EED] transition-colors"
+          >
             Bonfires AI
           </a>
         </div>
         <div className="flex flex-row gap-6 justify-center">
           {personaConfig.footer.socialLinks.map(link => (
-            <a key={link.label} className="underline hover:text-[#A15EED] transition-colors" href={link.url}>
+            <a
+              key={link.label}
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-[#A15EED] transition-colors"
+            >
               {link.label}
             </a>
           ))}
