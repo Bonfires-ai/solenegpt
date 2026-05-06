@@ -553,42 +553,102 @@ Every consumer gets `createFacilitator()` and never knows which vendor they're t
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `Attempt to debit an account but found no record of a prior credit` | Facilitator (account[0]) has 0 SOL | Airdrop SOL to facilitator pubkey via web faucet |
+| `Attempt to debit an account but found no record of a prior credit` | Facilitator (account[0]) has 0 SOL on the active network | Fund the **facilitator** pubkey with SOL on the correct network. Devnet and mainnet are separate ledgers — funding devnet doesn't help mainnet. |
+| `failed to get recent blockhash: 403 Access forbidden` (in browser console) | `NEXT_PUBLIC_SOLANA_RPC_URL` points at `api.mainnet-beta.solana.com` — Solana Labs blocks browser dApps from that endpoint | **Use a paid RPC for mainnet** (Helius, Triton, QuickNode). The public mainnet RPC is for backend tooling only — never put it in `NEXT_PUBLIC_*`. |
+| `Transaction simulation failed: insufficient funds` from SPL Token program | Phantom is on a different network than your dApp expects (e.g. Phantom on Devnet, dApp on Mainnet — same buyer pubkey but different USDC balance per ledger) | Switch Phantom: gear icon → Developer Settings → Testnet Mode → set network to match `NEXT_PUBLIC_SOLANA_NETWORK` |
 | `Error processing Instruction 2: invalid account data for instruction` from Token program | Source ATA doesn't exist (user has no USDC for this mint) OR wrong mint | User must hold the *exact* USDC mint your code expects. Match faucet → mint. |
 | `instruction[2] is not an SPL token program instruction` (your own verify code) | Phantom prepended a priority-fee `ComputeBudget` ix when signing, shifting your TransferChecked from index 2 to 3 | **Scan all instructions** for TransferChecked; don't hardcode index 2 |
+| Phantom shows "This dApp could be malicious" + "domain is new" warnings | Phantom blocklist hasn't seen this domain yet — fires for any fresh dApp | Click "Proceed anyway (unsafe)". Email `review@phantom.com` to expedite domain review for production. |
+| Phantom shows "You don't have enough SOL" when user is *not* the fee payer | Phantom's pre-flight balance check sees the **facilitator** has 0 SOL on the active network and surfaces it as a generic warning | Fund the facilitator (not the buyer) with SOL on the network you're operating on |
+| You funded the wrong wallet — facilitator still 0 SOL | Easy to confuse buyer / recipient / facilitator | **Three wallets, three roles** — see the [mainnet wallet table](#three-wallet-roles) below. Only the **facilitator** needs SOL. |
 | `Wallet does not support signTransaction` | Browser wallet adapter not connected, or wallet doesn't implement the Wallet Standard | Make sure the wallet shows as "connected" before triggering payment |
 | Facilitator's settle fails with `Blockhash not found` | Tx took too long between client-sign and server-broadcast | Use `'finalized'` for `getLatestBlockhash` on the client; settle promptly |
 | Recipient ATA doesn't exist | First payment to a fresh address | Include `createAssociatedTokenAccountIdempotentInstruction` BEFORE the TransferChecked, with feePayer as payer |
 | Wallet adapter meta-package crashes Next.js hydration | `@solana/wallet-adapter-wallets` drags in 30+ legacy adapters with React-16 peer deps | Pass `wallets={[]}` — Phantom/Solflare/Backpack auto-register via Wallet Standard |
+| Deepgram transcribes "x402" as "x four zero two" | Deepgram's default formatting spells digits out as words | Pass `smart_format=True` to the Deepgram STT plugin. Also formats "ERC20" correctly, capitalizes proper nouns, adds punctuation. |
+| Deepgram crashes with `keyterms only available for English` when language=fr | Nova-3's `keyterms` parameter is English-only | Conditionally pass `keyterms` only when language starts with `en`; for other languages the base model handles loanwords fine |
 | `Cannot find matching keyid` from corepack | Node 22.13 ships with stale signing keys | `COREPACK_INTEGRITY_KEYS=0 pnpm install` |
 
 ---
 
 ## 12. Going to mainnet
 
-The dev → prod toggle is mostly env vars + funding:
+> ⚠️ **The single most important thing**: you **MUST** use a paid RPC provider for mainnet. The public endpoint `https://api.mainnet-beta.solana.com` actively 403s browser dApp requests — it's for backend tooling only. Helius's free tier (100k credits/month) is more than enough. Spend 5 minutes signing up before anything else.
+
+### Three-wallet roles
+
+Before flipping anything, internalize which wallet does what — confusing them is the #1 source of "why isn't this working" pain when going to mainnet:
+
+| Role | Address source | Needs (on mainnet) | Example value |
+|---|---|---|---|
+| **Facilitator** (pays Solana network fees) | `FACILITATOR_KEYPAIR_SECRET` env var → derived pubkey | **SOL** (~0.01 SOL covers thousands of settlements) | `2ubcwWMd...` |
+| **Buyer** (the person paying) | The wallet currently active in their Phantom | USDC (the actual payment) | varies per user |
+| **Recipient** (where USDC lands) | `SOLANA_RECIPIENT_ADDRESS` env var | **nothing** — just receives USDC | your treasury / Phantom |
+
+If a payment fails with "insufficient funds" or "no prior credit", check this table — almost always the wrong wallet got funded.
+
+### Step-by-step mainnet flip
+
+**1. Sign up for Helius** at [helius.dev](https://www.helius.dev/) → copy your mainnet endpoint URL (looks like `https://mainnet.helius-rpc.com/?api-key=YOUR_KEY`).
+
+**2. Generate a fresh facilitator keypair for mainnet** — don't reuse the devnet one:
+
+```sh
+node scripts/x402-setup.mjs   # in our repo, or equivalent
+```
+
+Save the printed `FACILITATOR_KEYPAIR_SECRET` and pubkey. Back the secret up to a password manager.
+
+**3. Fund the new facilitator pubkey with mainnet SOL** — buy SOL on Coinbase/Kraken/etc., withdraw to that pubkey on the Solana network. ~0.01 SOL ($2-3) is plenty. **Verify the address character-by-character — wrong network or wrong address = funds lost.**
+
+**4. Update env vars** (Vercel project settings, or wherever you host):
 
 ```diff
 - NEXT_PUBLIC_SOLANA_NETWORK=devnet
 - NEXT_PUBLIC_SOLANA_RPC_URL=https://api.devnet.solana.com
 - SOLANA_RPC_URL=https://api.devnet.solana.com
+- FACILITATOR_KEYPAIR_SECRET=<old devnet secret>
 + NEXT_PUBLIC_SOLANA_NETWORK=mainnet
-+ NEXT_PUBLIC_SOLANA_RPC_URL=https://mainnet.helius-rpc.com/?api-key=...
-+ SOLANA_RPC_URL=https://mainnet.helius-rpc.com/?api-key=...
++ NEXT_PUBLIC_SOLANA_RPC_URL=https://mainnet.helius-rpc.com/?api-key=YOUR_KEY
++ SOLANA_RPC_URL=https://mainnet.helius-rpc.com/?api-key=YOUR_KEY
++ FACILITATOR_KEYPAIR_SECRET=<new mainnet secret from step 2>
 ```
 
-Then:
-1. Fund facilitator with **real SOL** (~0.01 SOL = thousands of settlements)
-2. Switch `SOLANA_RECIPIENT_ADDRESS` to a wallet you actually want to receive payments
-3. Make sure your code uses mainnet USDC mint (`EPjFWdd5...`)
-4. Use a paid mainnet RPC ([Helius](https://www.helius.dev/), [Triton One](https://triton.one), [QuickNode](https://www.quicknode.com)) — the public RPC will rate-limit you in production
+Set `SOLANA_RECIPIENT_ADDRESS` to the wallet (or multisig) you actually want to receive payments.
 
-Mainnet checklist:
-- [ ] Facilitator keypair backed up somewhere safe
-- [ ] Monitoring on facilitator SOL balance (alert when < 0.01 SOL)
-- [ ] Rate-limiting on the paid endpoint (one tx per IP per minute)
-- [ ] Replay protection (we mint single-use JWTs; consider also keeping a JTI ledger)
-- [ ] Logging txids on every settle for reconciliation
+**5. Redeploy.** `NEXT_PUBLIC_*` vars are baked into the JS bundle at build time, so saving alone doesn't apply them — trigger a fresh build/deploy after editing.
+
+**6. Verify with a small test transaction.** In Phantom, switch network to **Mainnet** (Settings → Developer Settings → off, or just confirm the network indicator). Have a small amount of mainnet USDC. Walk through the payment flow on the deployed site. Check the resulting tx hash on [solscan.io](https://solscan.io) — you should see the facilitator co-signing as fee payer and your USDC moving to the recipient.
+
+### Optional but worth the small effort: split the RPC URL
+
+The `NEXT_PUBLIC_SOLANA_RPC_URL` is baked into the browser bundle, which means **anyone viewing your site can extract your Helius API key from the JS** and use your paid quota. Mitigation:
+
+```env
+# Public, baked into browser — use the free public endpoint (browser only does light reads)
+NEXT_PUBLIC_SOLANA_RPC_URL=https://api.mainnet-beta.solana.com
+
+# Server-only, your paid Helius key — never reaches the browser
+SOLANA_RPC_URL=https://mainnet.helius-rpc.com/?api-key=YOUR_KEY
+```
+
+Wait — but the public RPC 403s browser POSTs! True. The wallet adapter only does a few reads (blockhash, balance), and those generally still work when called from a browser sometimes... actually, Solana Labs has tightened this. **In practice, you'll need a paid RPC for the browser too.** Either:
+- Use the same Helius URL on both (key is exposed but free tier is fine if you're okay with that), OR
+- Set up an Helius restricted-domain key for the public side (you can configure Helius to only accept requests from your domain, which limits abuse)
+
+Pragmatic recommendation: same Helius URL on both for hackathon/MVP. Set up domain restrictions in the Helius dashboard for production.
+
+### Mainnet operational checklist
+
+- [ ] Fresh facilitator keypair (not the devnet one)
+- [ ] Facilitator keypair backed up to a password manager
+- [ ] Monitoring on facilitator SOL balance — alert when < 0.005 SOL
+- [ ] Rate-limiting on the paid endpoint (1 tx per IP per minute via Vercel middleware or Cloudflare)
+- [ ] Replay protection (we mint single-use JWTs; persist consumed JTIs to a database for multi-instance deploys — in-memory dedup only works on a single Vercel function instance)
+- [ ] Logging tx hashes on every settle for accounting reconciliation
+- [ ] Helius API key restricted to your production domain (Helius dashboard → API Key → Allowed Origins)
+- [ ] Recipient address is a multisig (Squads, etc.) for any meaningful revenue
+- [ ] Phantom domain review — email `review@phantom.com` so the "malicious dApp" warning goes away for users on day 1
 
 ---
 

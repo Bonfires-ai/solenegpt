@@ -179,7 +179,14 @@ async def entrypoint(ctx: JobContext):  # noqa: C901 – keep high complexity fo
 
     # Deepgram nova-3 `keyterms` are English-only. Skip them for other languages
     # (the base model still handles loanwords like "DeFi", "smart contract" fine).
-    stt_kwargs: dict = {"model": "nova-3", "language": deepgram_language}
+    # `smart_format=True` formats digits as digits ("402" instead of "four zero two"),
+    # respects punctuation, capitalizes proper nouns. Critical for crypto jargon
+    # like "x402", "ERC20", "EIP-712".
+    stt_kwargs: dict = {
+        "model": "nova-3",
+        "language": deepgram_language,
+        "smart_format": True,
+    }
     if deepgram_language.startswith("en"):
         stt_kwargs["keyterms"] = stt_words
 

@@ -797,32 +797,101 @@ Look at the symptom in the table below. Each row is a real error we hit during i
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `Attempt to debit an account but found no record of a prior credit` | Facilitator has 0 SOL | Airdrop SOL to facilitator pubkey |
+| `Attempt to debit an account but found no record of a prior credit` | Facilitator has 0 SOL on the active network | Fund facilitator pubkey with SOL on the SAME network the dApp is operating on. Devnet ≠ mainnet — same address, different ledger, separate balances. |
+| `failed to get recent blockhash: 403 Access forbidden` | `NEXT_PUBLIC_SOLANA_RPC_URL` points at the public mainnet RPC (`api.mainnet-beta.solana.com`) — Solana Labs blocks browser dApps from that endpoint | **For mainnet, you MUST use a paid RPC provider.** Helius / QuickNode / Triton One. The public endpoint is for backend tooling only and will 403 any browser POST. Free Helius tier (100k credits/mo) covers most projects. |
+| `Transaction simulation failed: insufficient funds` from Token program (despite buyer having USDC) | Phantom is set to a different network than `NEXT_PUBLIC_SOLANA_NETWORK`. Same buyer pubkey but balances are network-specific. | User: gear icon → Developer Settings → switch to Mainnet (or whatever matches `NEXT_PUBLIC_SOLANA_NETWORK`). |
 | `Error processing Instruction X: invalid account data for instruction` from Token program | User's source ATA doesn't exist (no USDC on this mint) OR mint mismatch | Faucet correct USDC mint to user; verify `asset` matches what faucet handed out |
 | `instruction[N] is not an SPL token program instruction` (own verify code) | Hardcoded ix index instead of scanning | Use `findIndex` over compiled ix to locate TransferChecked by program ID + discriminator 12 |
+| Phantom shows "domain may be malicious" / "domain is new" | Phantom blocklist hasn't seen this domain — fires for any fresh dApp | Click "Proceed anyway (unsafe)". Email `review@phantom.com` for production domain review. |
+| Phantom shows "You don't have enough SOL" when user is *not* the fee payer | Phantom's pre-flight check sees the **facilitator** has 0 SOL on the active network | Fund the facilitator (not the buyer) with SOL. The 3 wallets — buyer/facilitator/recipient — each have a specific role; only the facilitator needs SOL. |
+| User funded the wrong wallet — "insufficient funds" persists | Confused buyer / facilitator / recipient roles | `SOLANA_RECIPIENT_ADDRESS` (the wallet that *receives* USDC) needs nothing. The wallet that needs SOL is the **facilitator** — its pubkey is derived from `FACILITATOR_KEYPAIR_SECRET`. |
 | Hydration error / blank page | Imported `@solana/wallet-adapter-wallets` | Remove the import, pass `wallets={[]}` |
 | `Wallet does not support signTransaction` | Wallet not connected, or non-Wallet-Standard wallet | Confirm `wallet.connected === true` before calling `pay()` |
 | `Blockhash not found` on settle | Tx aged out between client-sign and server-broadcast | Use `getLatestBlockhash('finalized')` on client; settle promptly |
+| Deepgram transcribes "x402" as "x four zero two" | Default Deepgram formatting spells digits as words | Pass `smart_format: true` to the Deepgram STT plugin. Also formats "ERC20", "EIP-712", capitalizes proper nouns, adds punctuation. |
+| Deepgram crashes with `keyterms only available for English` (when language=fr) | Nova-3's `keyterms` parameter is English-only | Conditionally pass `keyterms` only when language starts with `en`. Other languages handle loanwords ("DeFi", "smart contract") fine without it. |
 | `Cannot find matching keyid` on `pnpm install` | Stale corepack signing keys (Node 22.13 bug) | `COREPACK_INTEGRITY_KEYS=0 pnpm install` |
 | `Coinbase facilitator GET /supported 401` | CDP API key invalid or JWT signing failed | Verify `CDP_API_KEY_SECRET` is the full PEM (`-----BEGIN EC PRIVATE KEY-----` ... `-----END EC PRIVATE KEY-----\n`) including line breaks |
 
 ---
 
-## 10. Out of scope
+## 10. Going to mainnet
+
+The dev → prod flip is mostly env vars and one critical infra requirement.
+
+> ⚠️ **The non-negotiable**: you **MUST** use a paid RPC provider for `NEXT_PUBLIC_SOLANA_RPC_URL` on mainnet. The public endpoint `https://api.mainnet-beta.solana.com` actively returns 403 to browser dApp requests — it's reserved for backend tooling. **No paid RPC = no working mainnet deploy**, full stop. Sign up at [helius.dev](https://www.helius.dev/) (free tier 100k credits/mo) before doing anything else.
+
+### Three wallets, three roles
+
+Drilling this in because confusing them is the #1 cause of mainnet pain:
+
+| Role | Source | Needs (mainnet) |
+|---|---|---|
+| **Facilitator** | `FACILITATOR_KEYPAIR_SECRET` env → derived pubkey | **SOL** (~0.01 = thousands of tx) |
+| **Buyer** | User's connected Phantom (varies per session) | USDC (the actual payment) |
+| **Recipient** | `SOLANA_RECIPIENT_ADDRESS` env | **nothing** — just receives |
+
+Only the **facilitator** needs to be funded by you. Funding the recipient or buyer wallet by mistake is a no-op for unblocking the flow.
+
+### Step-by-step
+
+1. **Sign up for Helius** → copy mainnet endpoint URL
+2. **Generate a fresh facilitator keypair** for mainnet (don't reuse devnet's): `node scripts/x402-setup.mjs`. Save the secret to a password manager.
+3. **Fund the new facilitator pubkey** with mainnet SOL — buy on an exchange, withdraw to the address on Solana network. ~0.01 SOL ($2-3) is plenty.
+4. **Update env vars**:
+   ```diff
+   - NEXT_PUBLIC_SOLANA_NETWORK=devnet
+   - NEXT_PUBLIC_SOLANA_RPC_URL=https://api.devnet.solana.com
+   - SOLANA_RPC_URL=https://api.devnet.solana.com
+   - FACILITATOR_KEYPAIR_SECRET=<old devnet secret>
+   + NEXT_PUBLIC_SOLANA_NETWORK=mainnet
+   + NEXT_PUBLIC_SOLANA_RPC_URL=https://mainnet.helius-rpc.com/?api-key=YOUR_KEY
+   + SOLANA_RPC_URL=https://mainnet.helius-rpc.com/?api-key=YOUR_KEY
+   + FACILITATOR_KEYPAIR_SECRET=<new mainnet secret>
+   ```
+5. **Set `SOLANA_RECIPIENT_ADDRESS`** to the wallet (or multisig) that should receive payments
+6. **Redeploy.** `NEXT_PUBLIC_*` vars are baked at build time — saving alone won't apply them.
+7. **Switch Phantom to Mainnet** before testing.
+8. **Verify with a small test tx.** Inspect on [solscan.io](https://solscan.io).
+
+### Securing the RPC API key
+
+`NEXT_PUBLIC_*` vars ship to the browser bundle. Anyone viewing your site can extract the Helius API key from the JS and abuse your quota. Two mitigations:
+
+- **Helius "Allowed Origins" restriction** — in the Helius dashboard, restrict the API key to only your production domain. Even if extracted, the key won't work from other origins.
+- **Split server/client URLs** — public endpoint (limited use) for browser; paid endpoint (server-only) for facilitator. In practice the public endpoint may not work for browser blockhash fetches in 2026, so this is less viable than it sounds.
+
+For hackathon/MVP: same Helius URL on both, configure domain restrictions in Helius dashboard. For real production: review the operational checklist below.
+
+### Mainnet operational checklist
+
+- [ ] Fresh facilitator keypair (not the devnet one)
+- [ ] Facilitator keypair backed up to password manager
+- [ ] Helius API key restricted to your production domain
+- [ ] Monitoring on facilitator SOL balance — alert when < 0.005 SOL
+- [ ] Rate-limiting on the paid endpoint (1 tx per IP per minute)
+- [ ] Consumed-JTI ledger persisted to a database (in-memory `Set` only works on a single instance — Vercel functions are multi-instance)
+- [ ] Tx hashes logged on every settle for accounting reconciliation
+- [ ] Recipient address is a multisig (Squads, etc.) for any meaningful revenue
+- [ ] Phantom domain review request emailed to `review@phantom.com` so users don't see "malicious dApp" warning on day 1
+
+---
+
+## 11. Out of scope
 
 This spec does NOT cover:
 
-- Persisting JWT JTIs across restarts (in-memory dedup is fine for a single-instance dev server)
+- Persisting JWT JTIs across restarts (in-memory dedup is fine for a single-instance dev server; durable dedup needed for prod)
 - Rate limiting (add at the edge — Vercel/Cloudflare/middleware)
-- Refunds (x402 settlement is one-shot and final)
+- Refunds (x402 settlement is one-shot and final — refunds need a separate flow)
 - Multi-recipient splits (you'd need a custom on-chain program)
-- Mainnet deployment hardening (RPC failover, monitoring, key rotation)
+- Recovery flows for a compromised facilitator key (rotate via env var; SOL on the old key is still recoverable if the secret is intact)
 
 These belong in a follow-up doc once the basic flow works.
 
 ---
 
-## 11. Reference links
+## 12. Reference links
 
 ### x402 protocol
 - Spec repo: https://github.com/coinbase/x402
