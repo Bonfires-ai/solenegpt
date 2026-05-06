@@ -30,7 +30,7 @@ export const personaConfig = {
       { label: 'Dev3pack', url: 'https://dev3pack.xyz' },
       { label: 'LinkedIn', url: 'https://fr.linkedin.com/in/solene-daviaud/en' },
     ],
-    githubRepo: 'https://github.com/ryptoc/austingpt',
+    githubRepo: 'https://github.com/Bonfires-ai/solenegpt',
   },
 
   // Moods / personas — repurposed as language selectors (same warm Solène persona)

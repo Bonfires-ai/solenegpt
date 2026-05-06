@@ -147,18 +147,26 @@ async def entrypoint(ctx: JobContext):  # noqa: C901 – keep high complexity fo
     greetings = mood_initial_greetings[mood]
 
     # ------------------------------------------------------------------
-    # Prime the agent with the persona's knowledge graph context
+    # Prime the agent with knowledge context — static markdown files plus
+    # the live Bonfires knowledge graph if configured.
     # ------------------------------------------------------------------
-    primed_context = await bonfires.prime_context(mood)
+    from voice_agent import knowledge
+
+    static_ctx = knowledge.load_static_knowledge() if knowledge.is_enabled() else ""
+    bonfires_ctx = await bonfires.prime_context(mood)
+
+    parts = [p for p in (static_ctx, bonfires_ctx) if p]
+    primed_context = "\n\n---\n\n".join(parts)
+
     if primed_context:
         logger.info(
-            "Bonfires context primed (%d chars) — injecting into system prompt",
+            "Primed context: %d chars (%d static + %d bonfires)",
             len(primed_context),
+            len(static_ctx),
+            len(bonfires_ctx),
         )
     else:
-        logger.info(
-            "No primed context — agent will rely on search_knowledge tool calls"
-        )
+        logger.info("No primed context — agent will rely on persona alone")
 
     system_prompt = build_mood_prompt(mood, primed_context=primed_context)
 
@@ -178,7 +186,7 @@ async def entrypoint(ctx: JobContext):  # noqa: C901 – keep high complexity fo
     session = AgentSession(
         stt=deepgram.STT(**stt_kwargs),
         llm=openai.LLM(
-            model=os.environ.get("LLM_MODEL", "openai/gpt-4.1-mini"),
+            model=os.environ.get("LLM_MODEL", "openai/gpt-5.4-mini"),
             base_url=os.environ.get("LLM_BASE_URL", "https://openrouter.ai/api/v1"),
             api_key=os.environ.get("OPENROUTER_API_KEY") or os.environ.get("OPENAI_API_KEY"),
         ),
