@@ -93,16 +93,16 @@ class Assistant(Agent):
         This is your memory — your writings, tweets, talks, and direct input.
         Use it to recall what you actually think about a topic before responding.
         Call this whenever you're giving feedback on a project, discussing
-        Ethereum development, builder tools, architecture, or web3 concepts.
+        Solana development, builder tools, architecture, AI agents, or web3 concepts.
 
         Parameters
         ----------
         query:
             What you want to recall from your own knowledge.
-            Examples: "my views on gas optimization",
-            "what I think about NFT projects",
+            Examples: "my views on x402 payments",
+            "what I think about Solana NFT projects",
             "my approach to teaching Solidity",
-            "Scaffold-ETH best practices".
+            "Dev3pack hackathon best practices".
         """
         logger.info("search_knowledge called with query: %s", query)
         result = await bonfires.delve(query)
@@ -137,13 +137,13 @@ class Assistant(Agent):
             This is only applicable and used if `has_enough_information` is True and `is_inappropriate` is False.
             If `has_enough_information` is False or `is_inappropriate` is True, this parameter may be an empty string.
         super_short_summary:
-            Craft a highly concise (1-3 words MAX) and impactful phrase that encapsulates the user's project idea. This phrase will complete the sentence "Ethereum is for __" on a shareable image.
+            Craft a highly concise (1-3 words MAX) and impactful phrase that encapsulates the user's project idea. This phrase will complete the sentence "Solana is for __" on a shareable image.
             Think creatively:
             *   Aim for a noun or a very short noun phrase.
             *   Make it catchy, memorable, and inspiring if possible.
             *   It should feel like a bold declaration or a core identity for the project.
-            *   Examples of good fits: "Global Unity", "Indie Creators", "Transparent Finance", "Healing the Planet", "Decentralized Art".
-            *   Ensure it makes perfect sense when read as "Ethereum is for [Your Phrase]".
+            *   Examples of good fits: "Global Unity", "Indie Creators", "Transparent Finance", "AI Agents", "Decentralized Art".
+            *   Ensure it makes perfect sense when read as "Solana is for [Your Phrase]".
             *   STRICTLY ADHERE to the 1-3 word limit.
             This is only applicable and used if `has_enough_information` is True and `is_inappropriate` is False.
             If `has_enough_information` is False or `is_inappropriate` is True, this parameter may be an empty string.

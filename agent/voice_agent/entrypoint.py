@@ -181,11 +181,21 @@ async def entrypoint(ctx: JobContext):  # noqa: C901 – keep high complexity fo
     # (the base model still handles loanwords like "DeFi", "smart contract" fine).
     # `smart_format=True` formats digits as digits ("402" instead of "four zero two"),
     # respects punctuation, capitalizes proper nouns. Critical for crypto jargon
-    # like "x402", "ERC20", "EIP-712".
+    # like "ERC20", "EIP-712".
+    # `replace=` patches specific phrases smart_format doesn't catch — "x402" and
+    # similar letter-prefixed tokens get spelled out as words by default.
     stt_kwargs: dict = {
         "model": "nova-3",
         "language": deepgram_language,
         "smart_format": True,
+        "replace": [
+            "x four zero two:x402",
+            "x 4 0 2:x402",
+            "ERC seven twenty one:ERC721",
+            "ERC eleven fifty five:ERC1155",
+            "EIP seven twelve:EIP-712",
+            "EIP three zero zero nine:EIP-3009",
+        ],
     }
     if deepgram_language.startswith("en"):
         stt_kwargs["keyterms"] = stt_words

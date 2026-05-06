@@ -115,7 +115,13 @@ import * as React from 'react';
 
 const sanitizeText = (text: string) => {
   // Strip markdown-ish chars only. Keep apostrophes — "we've" must stay "we've".
-  return text.replaceAll(/[*"`~#>]/g, '');
+  // Also patch crypto jargon Deepgram spells out (safety net even with
+  // server-side `replace` config, since smart_format misses some patterns).
+  return text
+    .replaceAll(/[*"`~#>]/g, '')
+    .replaceAll(/\bx\s+four\s+zero\s+two\b/gi, 'x402')
+    .replaceAll(/\bERC\s+twenty\b/gi, 'ERC20')
+    .replaceAll(/\bEIP\s+seven\s+twelve\b/gi, 'EIP-712');
 };
 
 interface Segment {
