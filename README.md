@@ -1,6 +1,6 @@
 # SoleneGPT
 
-An AI version of [Solène Daviaud](https://fr.linkedin.com/in/solene-daviaud/en) — founder of [Dev3pack](https://dev3pack.xyz) — that talks builders through their Web3 + AI projects in real-time voice. Pick a language, pay $0.01 USDC on Solana, and chat.
+An AI version of [Solène Daviaud](https://fr.linkedin.com/in/solene-daviaud/en) — founder of [Dev3pack](https://dev3pack.xyz) — that talks builders through their Web3 + AI projects in real-time voice. Pick a language, pay $0.20 USDC on Solana, and chat.
 
 > Forked from [devfolioco/austingpt](https://github.com/devfolioco/austingpt) (Austin XBT) and rebranded for Dev3pack. Major divergences: bilingual UI, Solana x402 payment gate (replacing the EVM/Base flow), and the persona is Solène instead of Austin. Original architecture credit upstream.
 
@@ -29,7 +29,7 @@ Same warm-founder persona either way — language is the only thing that switche
 
 ```
 Browser (Phantom + LiveKit client)
-   ↓ pay $0.01 USDC (Solana x402)
+   ↓ pay $0.20 USDC (Solana x402)
 Next.js API route (Vercel)
    ↓ verify + settle via FacilitatorClient
 Solana devnet / mainnet
@@ -123,7 +123,7 @@ Open [http://localhost:3000](http://localhost:3000), pick a language, hit Connec
 | `SOLANA_RECIPIENT_ADDRESS` | Where USDC payments land (your Solana wallet) |
 | `FACILITATOR_KEYPAIR_SECRET` | Base58 secret key for the facilitator (pays Solana tx fees) |
 | `VOICE_SESSION_JWT_SECRET` | HMAC secret for minting single-use session tokens |
-| `NEXT_PUBLIC_PAYMENT_DEFAULT_AMOUNT` | Session price in USD (default `0.01`) |
+| `NEXT_PUBLIC_PAYMENT_DEFAULT_AMOUNT` | Session price in USD (default `0.20`) |
 
 If using `X402_FACILITATOR=coinbase`, also set `CDP_API_KEY_ID` and `CDP_API_KEY_SECRET` from [portal.cdp.coinbase.com](https://portal.cdp.coinbase.com).
 

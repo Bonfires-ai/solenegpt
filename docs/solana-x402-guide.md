@@ -91,7 +91,7 @@ Two HTTP round-trips: probe → pay-and-retry. Settlement happens server-side, c
 ```
 
 - `network` is **CAIP-2** form: `solana:<first 32 chars of genesis hash>` — devnet has its own ID, see [section 7](#7-network-identifiers).
-- `amount` is a **string** of smallest units (USDC has 6 decimals, so `10000` = $0.01).
+- `amount` is a **string** of smallest units (USDC has 6 decimals, so `200000` = $0.20).
 - `asset` is the SPL **mint address**.
 - `payTo` is the recipient's base58 wallet pubkey (NOT their token account — the facilitator derives the ATA).
 - `extra.feePayer` is what the facilitator returns when you call its `/supported` endpoint. You bake it into the tx so the user doesn't need SOL to pay gas.
@@ -677,7 +677,7 @@ CDP_API_KEY_SECRET=<PEM-formatted EC private key>
 X402_SESSION_JWT_SECRET=<random 48 bytes, base64>
 
 # Pricing
-NEXT_PUBLIC_PAYMENT_DEFAULT_AMOUNT=0.01                  # USD
+NEXT_PUBLIC_PAYMENT_DEFAULT_AMOUNT=0.20                  # USD
 ```
 
 ---
