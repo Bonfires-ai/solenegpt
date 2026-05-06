@@ -577,7 +577,7 @@ const SESSION_TTL_SECONDS = 600;
 
 function buildRequirements(feePayer: string): PaymentRequirements {
   const isMainnet = (process.env.NEXT_PUBLIC_SOLANA_NETWORK ?? 'devnet').toLowerCase() === 'mainnet';
-  const usdAmount = parseFloat(process.env.NEXT_PUBLIC_PAYMENT_DEFAULT_AMOUNT ?? '0.01');
+  const usdAmount = parseFloat(process.env.NEXT_PUBLIC_PAYMENT_DEFAULT_AMOUNT ?? '0.20');
   return {
     scheme: SCHEME_EXACT,
     network: isMainnet ? NETWORK_SOLANA_MAINNET : NETWORK_SOLANA_DEVNET,
@@ -690,7 +690,7 @@ NEXT_PUBLIC_SOLANA_RPC_URL=https://api.devnet.solana.com
 NEXT_PUBLIC_SOLANA_NETWORK=devnet
 SOLANA_RECIPIENT_ADDRESS=<base58 wallet that receives USDC>
 X402_SESSION_JWT_SECRET=<random 48 bytes, base64>
-NEXT_PUBLIC_PAYMENT_DEFAULT_AMOUNT=0.01
+NEXT_PUBLIC_PAYMENT_DEFAULT_AMOUNT=0.20
 
 # Self-hosted facilitator (default)
 X402_FACILITATOR=self
