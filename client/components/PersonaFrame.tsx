@@ -98,7 +98,7 @@ const drawFrame = async (
   ctx.fillStyle = TEXT_MID;
   ctx.font = `400 16px ${INCONSOLATA}`;
   const motifY = height / 2 - 30;
-  ctx.fillText('Ethereum is for', width / 2, motifY);
+  ctx.fillText('Solana is for', width / 2, motifY);
 
   // === IDEA TEXT (Druk Condensed Super — uppercase, bold, condensed) ===
   const ideaUpper = idea.toUpperCase();
