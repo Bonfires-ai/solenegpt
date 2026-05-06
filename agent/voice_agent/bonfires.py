@@ -1,12 +1,13 @@
-"""Bonfires API client for querying Austin Griffith's bonfires graph.
+"""Bonfires API client for querying the persona's knowledge graph.
 
-The Bonfires platform provides a knowledge graph built from Austin's direct input
-and curated public writing. The ``/delve`` endpoint is the primary search interface,
-performing unified search across the knowledge graph via Graphiti.
+The Bonfires platform provides a knowledge graph built from the persona's
+direct input and curated public writing. The ``/delve`` endpoint is the
+primary search interface, performing unified search across the knowledge
+graph via Graphiti.
 
 Configuration is via environment variables:
     BONFIRES_API_KEY      – API key for authentication
-    BONFIRES_BONFIRE_ID   – Austin's bonfire identifier
+    BONFIRES_BONFIRE_ID   – the persona's bonfire identifier
     BONFIRES_API_URL      – Base URL (default: https://tnt-v2-staging.api.bonfires.ai)
 """
 
@@ -30,11 +31,13 @@ BONFIRES_BONFIRE_ID = os.environ.get("BONFIRES_BONFIRE_ID", "")
 _REQUEST_TIMEOUT = 10.0
 
 # Priming queries — fetched once at session start and injected into the system prompt
-# so the agent has Austin's voice grounded from the very first message.
+# so the agent has the persona's voice grounded from the very first message.
+# (Currently inactive: BONFIRES_API_KEY is unset by default. When you wire up
+# Solène's knowledge graph, retune these queries to her writing.)
 _PRIME_QUERIES = {
-    "core": "Austin Griffith's core philosophy on building, open source, and Ethereum development",
-    "excited": "Austin Griffith's enthusiastic approach to mentoring builders, rapid prototyping, and hackathons",
-    "critical": "Austin Griffith's views on first-principles understanding, simplicity, and challenging builders to go deeper",
+    "core": "Solène Daviaud's core philosophy on building, accessibility, and Web3 + AI education",
+    "english": "Solène Daviaud's approach to mentoring new builders, hackathons, and Dev3pack programs",
+    "french": "L'approche de Solène Daviaud pour mentor les nouveaux builders, les hackathons, et les programmes Dev3pack",
 }
 
 
@@ -57,11 +60,11 @@ def _auth_headers() -> dict[str, str]:
 # ---------------------------------------------------------------------------
 
 
-async def prime_context(mood: str = "excited") -> str:
-    """Fetch Austin's core philosophy + mood-specific context from the graph.
+async def prime_context(mood: str = "english") -> str:
+    """Fetch the persona's core philosophy + mood-specific context from the graph.
 
     Called once at session start.  The result is injected into the system prompt
-    so the agent is grounded in Austin's actual voice from the very first turn.
+    so the agent is grounded in the persona's actual voice from the very first turn.
 
     Returns an empty string if the API is unreachable or not configured (the
     agent can still function via on-demand ``search_knowledge`` tool calls).
@@ -106,7 +109,7 @@ async def prime_context(mood: str = "excited") -> str:
 
 
 async def delve(query: str) -> str:
-    """Search Austin's knowledge graph via the Bonfires ``/delve`` endpoint.
+    """Search the persona's knowledge graph via the Bonfires ``/delve`` endpoint.
 
     Returns a formatted text summary of the results suitable for LLM consumption.
     On failure, returns a short error note so the LLM can continue without crashing.
@@ -145,7 +148,7 @@ async def delve(query: str) -> str:
 
 
 async def vector_search(query: str, limit: int = 5) -> str:
-    """Search Austin's content chunks via Bonfires vector store.
+    """Search the persona's content chunks via Bonfires vector store.
 
     This is a more targeted content search (vs. the graph-based /delve) that
     returns specific text passages ranked by semantic similarity.
@@ -207,7 +210,7 @@ _MAX_ENTITIES = 10
 _MAX_EPISODES = 8
 
 # Entities with names longer than this are likely update-descriptions,
-# not real concept names (e.g. "Shared Austin Griffith's vision for...").
+# not real concept names (e.g. "Shared the persona's vision for...").
 _MAX_ENTITY_NAME_LEN = 80
 
 

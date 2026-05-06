@@ -8,7 +8,7 @@ const LoadingPage = () => {
           backgroundSize: '18px 18px',
         }}
       />
-      <div className="relative z-10 w-10 h-10 border-3 border-[#16A34A]/30 border-t-[#16A34A] rounded-full animate-spin" />
+      <div className="relative z-10 w-10 h-10 border-3 border-[#A15EED]/30 border-t-[#A15EED] rounded-full animate-spin" />
     </main>
   );
 };

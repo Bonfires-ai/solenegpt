@@ -11,7 +11,7 @@ const Snackbar = ({
   appearance?: 'error' | 'success' | 'loading';
 }) => {
   const bgStyles = {
-    success: 'bg-[#F0FDF4] border-[#16A34A]/20 text-[#15803D]',
+    success: 'bg-[#F0FDF4] border-[#A15EED]/20 text-[#7C3AED]',
     error: 'bg-[#FFF0F0] border-[#DC2626]/20 text-[#DC2626]',
     loading: 'bg-white border-[#E4EAEB] text-[#5C686D]',
   };

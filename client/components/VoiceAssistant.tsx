@@ -28,7 +28,7 @@ export function VoiceAssistant({ mood, hideControls }: { mood: AgentMoodI; hideC
     setLoading(true);
   };
 
-  const moodKey = mood === AgentMoodEnum.CRITICAL ? 'critical' : 'excited';
+  const moodKey = mood === AgentMoodEnum.FRENCH ? 'french' : 'english';
   const moodConfig = personaConfig.moods[moodKey];
 
   return (

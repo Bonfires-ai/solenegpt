@@ -7,16 +7,16 @@ guidelines).  Edit ``persona_config.py`` to swap in a different persona.
 
 from voice_agent.persona_config import (
     PERSONA_NAME,
-    EXCITED_TONE_GUIDELINES,
-    CRITICAL_TONE_GUIDELINES,
-    EXCITED_PERSONA_INTRO,
-    CRITICAL_PERSONA_INTRO,
-    EXCITED_GOAL,
-    CRITICAL_GOAL,
-    EXCITED_GREETINGS,
-    CRITICAL_GREETINGS,
-    INSUFFICIENT_INFO_EXCITED_END_MESSAGES,
-    INSUFFICIENT_INFO_CRITICAL_END_MESSAGES,
+    ENGLISH_TONE_GUIDELINES,
+    FRENCH_TONE_GUIDELINES,
+    ENGLISH_PERSONA_INTRO,
+    FRENCH_PERSONA_INTRO,
+    ENGLISH_GOAL,
+    FRENCH_GOAL,
+    ENGLISH_GREETINGS,
+    FRENCH_GREETINGS,
+    INSUFFICIENT_INFO_ENGLISH_END_MESSAGES,
+    INSUFFICIENT_INFO_FRENCH_END_MESSAGES,
 )
 
 # ---------------------------------------------------------------------------
@@ -92,7 +92,7 @@ def _build_system_prompt(
 
     If *primed_context* is provided (fetched from the Bonfires knowledge graph
     at session start), it is injected as foundational reference material so the
-    agent is grounded in Austin's actual voice from the very first turn.
+    agent is grounded in the persona's actual voice from the very first turn.
     """
     primed_block = ""
     if primed_context:
@@ -120,28 +120,24 @@ def _build_system_prompt(
 """
 
 
-# Extra mood-specific constraints that differ between the two prompts
-_EXCITED_EXTRA = """*   Remain constructively focused on building, even amidst the hype.
-*   Lean heavily into jargon, applied efficiently.
-*   Sound extremely caffeinated, optimistic, and brief."""
-
-_CRITICAL_EXTRA = """*   Underlying goal is constructive via critique. Avoid pure insult.
-*   Use jargon critically and efficiently.
-*   Sound challenging, skeptical, but retain core energy – delivered concisely."""
+# Both moods now use the same warm-mentor extras (same Solène, language varies).
+_WARM_EXTRA = """*   Remain constructively focused on building, with warmth.
+*   Use jargon naturally but explain when needed — accessibility first.
+*   Sound encouraging, present, and brief."""
 
 # Mood-specific prompt configs (used by build_mood_prompt at runtime)
 _MOOD_CONFIGS = {
-    "excited": {
-        "persona_intro": EXCITED_PERSONA_INTRO,
-        "goal": EXCITED_GOAL,
-        "tone_guidelines": EXCITED_TONE_GUIDELINES,
-        "extra_constraints": _EXCITED_EXTRA,
+    "english": {
+        "persona_intro": ENGLISH_PERSONA_INTRO,
+        "goal": ENGLISH_GOAL,
+        "tone_guidelines": ENGLISH_TONE_GUIDELINES,
+        "extra_constraints": _WARM_EXTRA,
     },
-    "critical": {
-        "persona_intro": CRITICAL_PERSONA_INTRO,
-        "goal": CRITICAL_GOAL,
-        "tone_guidelines": CRITICAL_TONE_GUIDELINES,
-        "extra_constraints": _CRITICAL_EXTRA,
+    "french": {
+        "persona_intro": FRENCH_PERSONA_INTRO,
+        "goal": FRENCH_GOAL,
+        "tone_guidelines": FRENCH_TONE_GUIDELINES,
+        "extra_constraints": _WARM_EXTRA,
     },
 }
 
@@ -152,18 +148,19 @@ def build_mood_prompt(mood: str, primed_context: str = "") -> str:
     Called at runtime from ``entrypoint.py`` so the primed knowledge graph
     context can be injected into the prompt before the conversation starts.
     """
-    config = _MOOD_CONFIGS.get(mood, _MOOD_CONFIGS["excited"])
+    config = _MOOD_CONFIGS.get(mood, _MOOD_CONFIGS["english"])
     return _build_system_prompt(**config, primed_context=primed_context)
 
+
 # ---------------------------------------------------------------------------
-# Greetings & end-messages (re-exported for backward compatibility)
+# Greetings & end-messages (re-exported for use in constants.py)
 # ---------------------------------------------------------------------------
 
-excited_greetings = EXCITED_GREETINGS
-critical_greetings = CRITICAL_GREETINGS
+english_greetings = ENGLISH_GREETINGS
+french_greetings = FRENCH_GREETINGS
 
-excited_initial_prompt = "Enthusiastically, but very briefly greet the user and ask what they're building. Be short and choppy"
-critical_initial_prompt = "Sternly, but very briefly greet the user and ask what they're building. Be short and choppy"
+english_initial_prompt = "Warmly, but very briefly greet the user and ask what they're building. Short and welcoming."
+french_initial_prompt = "Chaleureusement, mais très brièvement, accueille l'utilisateur et demande-lui ce qu'il construit. Court et accueillant."
 
-insufficient_info_excited_end_messages = INSUFFICIENT_INFO_EXCITED_END_MESSAGES
-insufficient_info_critical_end_messages = INSUFFICIENT_INFO_CRITICAL_END_MESSAGES
+insufficient_info_english_end_messages = INSUFFICIENT_INFO_ENGLISH_END_MESSAGES
+insufficient_info_french_end_messages = INSUFFICIENT_INFO_FRENCH_END_MESSAGES

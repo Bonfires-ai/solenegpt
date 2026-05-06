@@ -20,8 +20,9 @@ import { useRouter } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import type { ConnectionDetails } from '../api/connection-details/route';
 
-// When true, the payment gate is required before voice access
-const PAYMENT_GATE_ENABLED = process.env.NEXT_PUBLIC_DELVE_API_URL ? true : false;
+// When true, render <PaymentGate /> (which calls /api/paid/voice/session for a JWT).
+// When false, skip the gate entirely and connect to LiveKit directly.
+const PAYMENT_GATE_ENABLED = process.env.NEXT_PUBLIC_PAYMENT_GATE === 'true';
 
 const parseMoodQueryParam = (query: string | string[] | null): AgentMoodI | null => {
   if (typeof query === 'string') {
@@ -311,10 +312,10 @@ const TalkComponent = () => {
         />
         <div className="relative z-10 flex flex-col items-center justify-center gap-4">
           <div className="text-[#171D21] text-lg md:text-2xl font-bold mb-4 px-8 md:px-0 text-center font-inter tracking-[0.05em]">
-            Connecting to {personaConfig.moods[mood === AgentMoodEnum.EXCITED ? 'excited' : 'critical'].connectingLabel}
+            Connecting to {personaConfig.moods[mood === AgentMoodEnum.ENGLISH ? 'english' : 'french'].connectingLabel}
             ...
           </div>
-          <div className="w-10 h-10 border-3 border-[#16A34A]/40 border-t-[#16A34A] rounded-full animate-spin"></div>
+          <div className="w-10 h-10 border-3 border-[#A15EED]/40 border-t-[#A15EED] rounded-full animate-spin"></div>
         </div>
       </main>
     );
@@ -338,7 +339,7 @@ const TalkComponent = () => {
             appearance="colored"
             stretch={isPhone}
             className={clsx(
-              mood === AgentMoodEnum.EXCITED ? 'text-white bg-synthesis' : 'text-white bg-synthesis-dark shadow-lg'
+              mood === AgentMoodEnum.ENGLISH ? 'text-white bg-synthesis' : 'text-white bg-synthesis-dark shadow-lg'
             )}
             onClick={handleRetry}
           >

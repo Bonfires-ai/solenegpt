@@ -4,7 +4,6 @@ import { personaConfig } from '@/config/persona.config';
 import { type VoiceSessionStep, useVoiceSession } from '@/hooks/useVoiceSession';
 import type { AgentMoodI } from '@/types/agent';
 import { AgentMoodEnum } from '@/types/agent';
-import { useAppKitAccount } from '@reown/appkit/react';
 import clsx from 'clsx';
 import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
@@ -17,7 +16,7 @@ interface PaymentGateProps {
   onSessionReady: (sessionToken: string) => void;
 }
 
-const getMoodKey = (mood: AgentMoodI) => (mood === AgentMoodEnum.CRITICAL ? 'critical' : 'excited');
+const getMoodKey = (mood: AgentMoodI) => (mood === AgentMoodEnum.FRENCH ? 'french' : 'english');
 
 const stepLabels: Record<VoiceSessionStep, string> = {
   DISCONNECTED: 'Connect wallet to begin',
@@ -34,9 +33,7 @@ export function PaymentGate({ mood, onSessionReady }: PaymentGateProps) {
   const moodKey = getMoodKey(mood);
   const moodConfig = personaConfig.moods[moodKey];
 
-  const { step, error, sessionToken, connectWallet, startPayment, reset, isLoading } = useVoiceSession();
-
-  const { isConnected } = useAppKitAccount();
+  const { step, error, sessionToken, connectWallet, startPayment, reset, isLoading, isConnected } = useVoiceSession();
 
   useEffect(() => {
     if (isConnected && step === 'DISCONNECTED') {
@@ -102,7 +99,7 @@ export function PaymentGate({ mood, onSessionReady }: PaymentGateProps) {
           className="mt-4 flex items-center gap-2"
         >
           <span className="text-[#8E989C] font-inter text-sm tracking-wide uppercase">Session</span>
-          <span className="font-mono text-sm font-bold px-2.5 py-0.5 rounded-full bg-[#16A34A] text-white">
+          <span className="font-mono text-sm font-bold px-2.5 py-0.5 rounded-full bg-[#A15EED] text-white">
             ${PAYMENT_AMOUNT} USDC
           </span>
         </motion.div>
@@ -154,7 +151,7 @@ export function PaymentGate({ mood, onSessionReady }: PaymentGateProps) {
                   isCurrent && isLoading ? 'w-6 h-2' : isActive ? 'w-2 h-2' : 'w-1.5 h-1.5'
                 )}
                 style={{
-                  backgroundColor: isActive ? '#16A34A' : 'rgba(0,0,0,0.12)',
+                  backgroundColor: isActive ? '#A15EED' : 'rgba(0,0,0,0.12)',
                 }}
                 animate={isCurrent && isLoading ? { opacity: [0.5, 1, 0.5] } : {}}
                 transition={isCurrent && isLoading ? { repeat: Infinity, duration: 1.2, ease: 'easeInOut' } : {}}
@@ -181,7 +178,7 @@ export function PaymentGate({ mood, onSessionReady }: PaymentGateProps) {
                 className={clsx(
                   'w-full py-4 text-lg font-semibold transition-all font-inter tracking-[0.08em] uppercase',
                   'border-2 border-[#E4EAEB] text-[#171D21] bg-white',
-                  'hover:border-[#16A34A] hover:text-[#16A34A]',
+                  'hover:border-[#A15EED] hover:text-[#A15EED]',
                   'active:scale-[0.98]'
                 )}
               >
@@ -199,7 +196,7 @@ export function PaymentGate({ mood, onSessionReady }: PaymentGateProps) {
                 className={clsx(
                   'w-full py-4 text-lg font-semibold transition-all font-inter tracking-[0.08em] uppercase',
                   'active:scale-[0.98]',
-                  'bg-[#16A34A] text-white hover:bg-[#15803D]'
+                  'bg-[#A15EED] text-white hover:bg-[#7C3AED]'
                 )}
               >
                 Pay & Start Session
@@ -214,7 +211,7 @@ export function PaymentGate({ mood, onSessionReady }: PaymentGateProps) {
                 exit={{ opacity: 0 }}
                 className="flex flex-col items-center gap-3"
               >
-                <div className="w-8 h-8 border-2 border-[#16A34A]/40 border-t-transparent rounded-full animate-spin" />
+                <div className="w-8 h-8 border-2 border-[#A15EED]/40 border-t-transparent rounded-full animate-spin" />
                 <span className="text-[#8E989C] font-inter text-xs">
                   {step === 'SIGNING' ? 'Waiting for wallet signature\u2026' : 'Processing payment\u2026'}
                 </span>
@@ -232,7 +229,7 @@ export function PaymentGate({ mood, onSessionReady }: PaymentGateProps) {
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                  className="w-12 h-12 rounded-full flex items-center justify-center bg-[#16A34A]"
+                  className="w-12 h-12 rounded-full flex items-center justify-center bg-[#A15EED]"
                 >
                   <svg
                     className="text-white"
@@ -265,7 +262,7 @@ export function PaymentGate({ mood, onSessionReady }: PaymentGateProps) {
                   onClick={reset}
                   className={clsx(
                     'px-6 py-2.5 text-sm font-medium',
-                    'border-2 border-[#E4EAEB] text-[#5C686D] hover:text-[#171D21] hover:border-[#16A34A]',
+                    'border-2 border-[#E4EAEB] text-[#5C686D] hover:text-[#171D21] hover:border-[#A15EED]',
                     'transition-all active:scale-[0.98]'
                   )}
                 >
@@ -283,7 +280,7 @@ export function PaymentGate({ mood, onSessionReady }: PaymentGateProps) {
           transition={{ delay: 0.7, duration: 0.4 }}
           className="mt-10 text-[#B4BEC0] font-inter text-[11px] leading-relaxed max-w-xs"
         >
-          Powered by x402 micropayments on Base.
+          Powered by x402 micropayments on Solana.
           <br />
           Session tokens are single-use and expire after 10 minutes.
         </motion.p>

@@ -1,11 +1,11 @@
 from voice_agent.prompts.prompts import (
     build_mood_prompt,
-    excited_initial_prompt,
-    critical_initial_prompt,
-    excited_greetings,
-    critical_greetings,
-    insufficient_info_excited_end_messages,
-    insufficient_info_critical_end_messages,
+    english_initial_prompt,
+    french_initial_prompt,
+    english_greetings,
+    french_greetings,
+    insufficient_info_english_end_messages,
+    insufficient_info_french_end_messages,
 )
 from voice_agent.persona_config import (
     TIMEOUT_SECONDS,
@@ -17,13 +17,13 @@ from voice_agent.persona_config import (
 )
 
 mood_initial_prompts = {
-    "excited": excited_initial_prompt,
-    "critical": critical_initial_prompt,
+    "english": english_initial_prompt,
+    "french": french_initial_prompt,
 }
 
-mood_initial_greetings = {"excited": excited_greetings, "critical": critical_greetings}
+mood_initial_greetings = {"english": english_greetings, "french": french_greetings}
 
 mood_insufficient_info_end_messages = {
-    "excited": insufficient_info_excited_end_messages,
-    "critical": insufficient_info_critical_end_messages,
+    "english": insufficient_info_english_end_messages,
+    "french": insufficient_info_french_end_messages,
 }

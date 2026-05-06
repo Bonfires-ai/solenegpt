@@ -66,7 +66,7 @@ const EditIdea = ({
             Discard
           </button>
           <button
-            className="bg-[#16A34A] text-white px-4 py-2 min-w-24 font-medium hover:bg-[#15803D] transition-colors"
+            className="bg-[#A15EED] text-white px-4 py-2 min-w-24 font-medium hover:bg-[#7C3AED] transition-colors"
             onClick={save}
           >
             Save

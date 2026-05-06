@@ -18,7 +18,7 @@ export default function DevSharePage() {
   const [summary, setSummary] = useState(
     'A decentralized network where autonomous agents collaborate, interact, and execute tasks transparently—empowering users to build trustless systems, automate workflows, and unlock new forms of digital cooperation.'
   );
-  const [mood, setMood] = useState<AgentMoodEnum>(AgentMoodEnum.EXCITED);
+  const [mood, setMood] = useState<AgentMoodEnum>(AgentMoodEnum.ENGLISH);
   const [showModal, setShowModal] = useState(true);
 
   return (

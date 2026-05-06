@@ -34,10 +34,9 @@ export const getTweetCopy = ({
   zoraUrl: string | null;
 }) => {
   if (zoraUrl) {
-    return personaConfig.shareCopiesWithZora[Math.floor(Math.random() * personaConfig.shareCopiesWithZora.length)].replace(
-      '{{zora_link}}',
-      zoraUrl
-    );
+    return personaConfig.shareCopiesWithZora[
+      Math.floor(Math.random() * personaConfig.shareCopiesWithZora.length)
+    ].replace('{{zora_link}}', zoraUrl);
   }
 
   return personaConfig.shareCopies[Math.floor(Math.random() * personaConfig.shareCopies.length)];
@@ -53,10 +52,9 @@ export const getFarcasterCopy = ({
   zoraUrl: string | null;
 }) => {
   if (zoraUrl) {
-    return personaConfig.shareCopiesWithZora[Math.floor(Math.random() * personaConfig.shareCopiesWithZora.length)].replace(
-      '{{zora_link}}',
-      zoraUrl
-    );
+    return personaConfig.shareCopiesWithZora[
+      Math.floor(Math.random() * personaConfig.shareCopiesWithZora.length)
+    ].replace('{{zora_link}}', zoraUrl);
   }
 
   return personaConfig.shareCopies[Math.floor(Math.random() * personaConfig.shareCopies.length)];

@@ -1,10 +1,9 @@
 import { personaConfig } from '@/config/persona.config';
-import AppKitContextProvider from '@/context/AppKitContext';
+import SolanaWalletContextProvider from '@/context/SolanaWalletContext';
 import '@livekit/components-styles';
 import { Analytics } from '@vercel/analytics/next';
 import clsx from 'clsx';
 import { Metadata } from 'next';
-import { headers } from 'next/headers';
 import { inter } from './fonts/fonts';
 import './globals.css';
 
@@ -45,13 +44,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const headersObj = headers();
-  const cookies = headersObj.get('cookie');
-
   return (
     <html lang="en" className={'h-full'}>
       <body className={clsx('h-full', inter.variable)}>
-        <AppKitContextProvider cookies={cookies}>{children}</AppKitContextProvider>
+        <SolanaWalletContextProvider>{children}</SolanaWalletContextProvider>
         <Analytics />
       </body>
     </html>

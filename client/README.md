@@ -1,4 +1,4 @@
-# AustinGPT Client
+# SoleneGPT Client
 
 ## Getting started
 

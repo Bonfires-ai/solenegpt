@@ -31,7 +31,7 @@ def save_conversation(
 
     if not datalayer_base_url or not datalayer_api_key:
         logger.info(
-            "Skipping Devfolio Datalayer API call - required environment variables not defined"
+            "Skipping analytics datalayer call - required environment variables not defined"
         )
         return
 

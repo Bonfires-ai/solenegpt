@@ -15,34 +15,35 @@ const needsWallet = isZoraMintingEnabled || isPaymentGateEnabled;
 if (!projectId && needsWallet) {
   console.warn(
     'NEXT_PUBLIC_PROJECT_ID is not defined – wallet features will be disabled. ' +
-    'Set NEXT_PUBLIC_ENABLE_ZORA_MINTING=false and remove NEXT_PUBLIC_DELVE_API_URL to silence this warning.'
+      'Set NEXT_PUBLIC_ENABLE_ZORA_MINTING=false and remove NEXT_PUBLIC_DELVE_API_URL to silence this warning.'
   );
 }
 
 export const networks = [base];
 
 //Set up the Wagmi Adapter (Config)
-export const wagmiAdapter = needsWallet && projectId
-  ? new WagmiAdapter({
-      storage: createStorage({
-        storage: cookieStorage,
-      }),
-      connectors: [
-        /**
+export const wagmiAdapter =
+  needsWallet && projectId
+    ? new WagmiAdapter({
+        storage: createStorage({
+          storage: cookieStorage,
+        }),
+        connectors: [
+          /**
           we are intentionally using coinbase sdk v3 here
           because v4 forces a reload on disconnect,
           which resets our react app state
         */
-        coinbaseWallet({
-          reloadOnDisconnect: false,
-          version: '3',
-          appName: personaConfig.appName,
-        }),
-      ],
-      ssr: true,
-      projectId: projectId!,
-      networks,
-    })
-  : (null as unknown as WagmiAdapter);
+          coinbaseWallet({
+            reloadOnDisconnect: false,
+            version: '3',
+            appName: personaConfig.appName,
+          }),
+        ],
+        ssr: true,
+        projectId: projectId!,
+        networks,
+      })
+    : (null as unknown as WagmiAdapter);
 
 export const config = wagmiAdapter?.wagmiConfig;

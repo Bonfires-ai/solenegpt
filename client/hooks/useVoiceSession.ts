@@ -1,17 +1,24 @@
 'use client';
 
 /**
- * useVoiceSession — manages the paid voice session flow.
+ * useVoiceSession — manages the paid voice session flow on Solana via x402.
  *
  * State machine:
  *   DISCONNECTED → WALLET_CONNECTED → SIGNING → PAYMENT_PENDING → SESSION_READY → IN_SESSION → ENDED
+ *
+ * Wire flow:
+ *   1. Probe POST /api/paid/voice/session  → expect 402 + PaymentRequiredBody
+ *   2. Build + sign USDC SPL transferChecked via wallet adapter
+ *   3. Retry POST with X-PAYMENT header  → 200 + { session_token }
+ *   4. Caller routes session_token to /api/connection-details
  */
-import { buildPaymentTypedData, encodePaymentHeader, fetchPaymentConfig } from '@/lib/payment';
-import type { X402PaymentHeader } from '@/lib/payment';
-import { useAppKit, useAppKitAccount } from '@reown/appkit/react';
+import { encodeXPaymentHeader } from '@/lib/x402/header';
+import { buildAndSignPayment } from '@/lib/x402/payment-builder';
+import type { PaymentRequiredBody, PaymentRequirements } from '@/lib/x402/spec';
+import { X402_VERSION } from '@/lib/x402/spec';
+import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import { useWalletModal } from '@solana/wallet-adapter-react-ui';
 import { useCallback, useState } from 'react';
-import type { SignTypedDataParameters } from 'viem';
-import { useSignTypedData } from 'wagmi';
 
 export type VoiceSessionStep =
   | 'DISCONNECTED'
@@ -23,29 +30,20 @@ export type VoiceSessionStep =
   | 'ENDED'
   | 'ERROR';
 
-interface VoiceSessionResult {
+interface VoiceSessionResponse {
   session_token: string;
   expires_in: number;
-  tx_hash: string;
+  tx_hash?: string;
 }
 
-// Payment configuration from env (used as fallback if server config fetch fails)
-const DELVE_API_URL = process.env.NEXT_PUBLIC_DELVE_API_URL ?? '';
-const PAYMENT_AGENT_ID = process.env.NEXT_PUBLIC_PAYMENT_AGENT_ID ?? '';
-
-const FALLBACK_CONFIG = {
-  tokenAddress: process.env.NEXT_PUBLIC_PAYMENT_TOKEN_ADDRESS ?? '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-  recipientAddress: process.env.NEXT_PUBLIC_ONCHAINFI_INTERMEDIARY_ADDRESS ?? '',
-  network: process.env.NEXT_PUBLIC_PAYMENT_NETWORK ?? 'base',
-  chainId: parseInt(process.env.NEXT_PUBLIC_CHAIN_ID ?? '8453', 10),
-  amount: process.env.NEXT_PUBLIC_PAYMENT_DEFAULT_AMOUNT ?? '1.00',
-};
+const PAID_ENDPOINT = '/api/paid/voice/session';
 
 export interface UseVoiceSessionReturn {
   step: VoiceSessionStep;
   error: string | null;
   sessionToken: string | null;
   txHash: string | null;
+  isConnected: boolean;
   connectWallet: () => void;
   startPayment: () => Promise<void>;
   reset: () => void;
@@ -53,102 +51,94 @@ export interface UseVoiceSessionReturn {
 }
 
 export function useVoiceSession(): UseVoiceSessionReturn {
-  const { open } = useAppKit();
-  const { address, isConnected } = useAppKitAccount();
-  const { signTypedDataAsync } = useSignTypedData();
+  const { connection } = useConnection();
+  const wallet = useWallet();
+  const { setVisible } = useWalletModal();
 
   const [step, setStep] = useState<VoiceSessionStep>('DISCONNECTED');
   const [error, setError] = useState<string | null>(null);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
 
+  const isConnected = Boolean(wallet.connected && wallet.publicKey);
+
   const connectWallet = useCallback(() => {
     if (isConnected) {
       setStep('WALLET_CONNECTED');
       return;
     }
-    open();
-  }, [isConnected, open]);
-
-  // Watch for wallet connection state changes
-  // (handled by the component observing isConnected)
+    setVisible(true);
+  }, [isConnected, setVisible]);
 
   const startPayment = useCallback(async () => {
-    if (!isConnected || !address) {
-      setError('Please connect your wallet first.');
+    if (!wallet.publicKey) {
+      setError('Connect your wallet first.');
       return;
     }
 
     try {
       setError(null);
-
-      // Step 1: Fetch payment config from server
       setStep('SIGNING');
-      let recipientAddress = FALLBACK_CONFIG.recipientAddress;
-      let tokenAddress = FALLBACK_CONFIG.tokenAddress;
-      let network = FALLBACK_CONFIG.network;
-      try {
-        const serverConfig = await fetchPaymentConfig();
-        recipientAddress = serverConfig.payTo;
-        tokenAddress = serverConfig.asset || tokenAddress;
-        network = serverConfig.network || network;
-      } catch (fetchErr) {
-        console.warn('Failed to fetch payment config from server, using fallback:', fetchErr);
+
+      // 1. Probe — expect 402 with payment requirements
+      const probe = await fetch(PAID_ENDPOINT, { method: 'POST' });
+
+      if (probe.status !== 402) {
+        if (probe.ok) {
+          // Server accepted without payment (gate disabled). Still pull the token.
+          const data = (await probe.json()) as VoiceSessionResponse;
+          setSessionToken(data.session_token);
+          setTxHash(data.tx_hash ?? null);
+          setStep('SESSION_READY');
+          return;
+        }
+        const body = await probe.json().catch(() => ({}));
+        throw new Error(`Unexpected ${probe.status}: ${(body as { error?: string }).error ?? probe.statusText}`);
       }
 
-      // Step 2: Sign EIP-712 payment authorization
-      const typedData = buildPaymentTypedData({
-        tokenAddress,
-        recipientAddress,
-        amount: FALLBACK_CONFIG.amount,
-        network,
-        chainId: FALLBACK_CONFIG.chainId,
-        userAddress: address,
+      const body = (await probe.json()) as PaymentRequiredBody;
+      const requirements: PaymentRequirements | undefined = body.accepts?.[0];
+      if (!requirements) throw new Error('No payment requirements in 402 response');
+
+      // 2. Build + sign the SPL transfer
+      const transaction = await buildAndSignPayment({
+        connection,
+        wallet,
+        requirements,
       });
 
-      const signature = await signTypedDataAsync({
-        domain: typedData.domain,
-        types: typedData.types,
-        primaryType: typedData.primaryType,
-        message: typedData.message,
-      } as unknown as SignTypedDataParameters);
+      const xPayment = encodeXPaymentHeader({
+        x402Version: X402_VERSION,
+        resource: body.resource,
+        accepted: requirements,
+        payload: { transaction },
+      });
 
-      const paymentHeader: X402PaymentHeader = encodePaymentHeader(
-        typedData.message,
-        signature,
-        network
-      );
-
-      // Step 3: Send to Delve for verification + settlement
+      // 3. Retry with X-PAYMENT
       setStep('PAYMENT_PENDING');
-      const response = await fetch(`${DELVE_API_URL}/paid/voice/session`, {
+      const paid = await fetch(PAID_ENDPOINT, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          payment_header: paymentHeader,
-          agent_id: PAYMENT_AGENT_ID,
-          expected_amount: FALLBACK_CONFIG.amount,
-        }),
+        headers: { 'X-PAYMENT': xPayment },
       });
 
-      if (!response.ok) {
-        const body = await response.json().catch(() => ({ detail: response.statusText }));
-        throw new Error(body.detail || `Payment failed (${response.status})`);
+      if (!paid.ok) {
+        const errBody = await paid.json().catch(() => ({}));
+        throw new Error((errBody as { error?: string }).error ?? `Payment failed (${paid.status})`);
       }
 
-      const result: VoiceSessionResult = await response.json();
+      const data = (await paid.json()) as VoiceSessionResponse;
+      if (!data.session_token) throw new Error('No session token in response');
 
-      if (!result.session_token) {
-        throw new Error('No session token in payment response');
-      }
-
-      setSessionToken(result.session_token);
-      setTxHash(result.tx_hash ?? null);
+      setSessionToken(data.session_token);
+      setTxHash(data.tx_hash ?? null);
       setStep('SESSION_READY');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Payment failed';
-      // User rejected the signature — go back to connected state
-      if (message.includes('rejected') || message.includes('denied') || message.includes('cancelled')) {
+      const userRejected =
+        message.toLowerCase().includes('rejected') ||
+        message.toLowerCase().includes('user denied') ||
+        message.toLowerCase().includes('user cancelled');
+      if (userRejected) {
         setStep('WALLET_CONNECTED');
         setError(null);
       } else {
@@ -156,7 +146,7 @@ export function useVoiceSession(): UseVoiceSessionReturn {
         setError(message);
       }
     }
-  }, [isConnected, address, signTypedDataAsync]);
+  }, [connection, wallet]);
 
   const reset = useCallback(() => {
     setStep(isConnected ? 'WALLET_CONNECTED' : 'DISCONNECTED');
@@ -172,6 +162,7 @@ export function useVoiceSession(): UseVoiceSessionReturn {
     error,
     sessionToken,
     txHash,
+    isConnected,
     connectWallet,
     startPayment,
     reset,

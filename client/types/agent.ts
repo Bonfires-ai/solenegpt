@@ -1,9 +1,9 @@
 export enum AgentMoodEnum {
-  EXCITED = 'excited',
-  CRITICAL = 'critical',
+  ENGLISH = 'english',
+  FRENCH = 'french',
 }
 
-export type AgentMoodI = AgentMoodEnum.CRITICAL | AgentMoodEnum.EXCITED;
+export type AgentMoodI = AgentMoodEnum.FRENCH | AgentMoodEnum.ENGLISH;
 
 export interface AgentShareData {
   oneLiner: string;

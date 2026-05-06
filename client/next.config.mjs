@@ -10,12 +10,12 @@ const nextConfig = {
           {
             type: 'query',
             key: 'mood',
-            value: 'excited',
+            value: 'english',
           },
           {
             type: 'query',
             key: 'mood',
-            value: 'critical',
+            value: 'french',
           },
         ],
       },

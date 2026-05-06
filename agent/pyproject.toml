@@ -1,12 +1,11 @@
 [project]
-name = "austingpt"
+name = "solenegpt"
 version = "0.0.1"
-description = "AustinGPT"
+description = "SoleneGPT — voice-first Dev3pack mentor"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "livekit-agents[cartesia,deepgram,elevenlabs,google,openai,silero,turn-detector]~=1.0",
-    "livekit-plugins-noise-cancellation~=0.2",
     "openai>=1.76.0",
     "python-dotenv>=1.1.0",
     "httpx>=0.27.0",
