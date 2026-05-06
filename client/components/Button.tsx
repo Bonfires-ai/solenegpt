@@ -20,12 +20,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       primary: clsx(
         baseStyles,
         'px-12 md:px-14 py-4 rounded-none text-xl md:text-2xl shadow-md tracking-[0.15em] uppercase',
-        'text-white bg-[#16A34A] hover:bg-[#15803D]'
+        'text-white bg-[#A15EED] hover:bg-[#7C3AED]'
       ),
       secondary: clsx(
         baseStyles,
         'px-12 md:px-14 py-4 rounded-none text-xl md:text-2xl shadow-md tracking-[0.15em] uppercase',
-        'border-2 border-[#16A34A] text-[#16A34A] bg-transparent hover:bg-[#16A34A]/10'
+        'border-2 border-[#A15EED] text-[#A15EED] bg-transparent hover:bg-[#A15EED]/10'
       ),
       colored: clsx(
         baseStyles,
@@ -35,7 +35,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       ),
       outlined: clsx(
         baseStyles,
-        'border-2 border-[#16A34A] text-[#16A34A] bg-transparent hover:bg-[#16A34A]/10 px-14 py-3 rounded-none text-lg md:text-xl shadow-md tracking-[0.1em] uppercase',
+        'border-2 border-[#A15EED] text-[#A15EED] bg-transparent hover:bg-[#A15EED]/10 px-14 py-3 rounded-none text-lg md:text-xl shadow-md tracking-[0.1em] uppercase',
         stretch ? 'w-full' : 'max-w-fit',
         disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-80'
       ),

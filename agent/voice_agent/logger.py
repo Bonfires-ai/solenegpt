@@ -1,7 +1,7 @@
 import logging
 
 
-def get_logger(name: str = "austingpt") -> logging.Logger:
+def get_logger(name: str = "solenegpt") -> logging.Logger:
     """Return a project configured logger.
 
     The default logger logs INFO and higher to stdout. 3rd-party

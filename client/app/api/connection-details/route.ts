@@ -37,8 +37,7 @@ export async function GET(request: Request) {
     // --- x402 Session Gate ---
     if (VOICE_SESSION_JWT_SECRET) {
       const sessionToken =
-        searchParams.get('session_token') ||
-        request.headers.get('authorization')?.replace('Bearer ', '');
+        searchParams.get('session_token') || request.headers.get('authorization')?.replace('Bearer ', '');
 
       if (!sessionToken) {
         return NextResponse.json(
@@ -52,7 +51,10 @@ export async function GET(request: Request) {
         const { payload } = await jwtVerify(sessionToken, secret, { algorithms: ['HS256'] });
 
         if (payload.session_type !== 'voice') {
-          return NextResponse.json({ error: 'Invalid token', detail: 'Token is not a voice session token.' }, { status: 401 });
+          return NextResponse.json(
+            { error: 'Invalid token', detail: 'Token is not a voice session token.' },
+            { status: 401 }
+          );
         }
 
         const jti = payload.jti;

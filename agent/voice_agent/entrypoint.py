@@ -25,6 +25,8 @@ from voice_agent.persona_config import (
     VOICE_SIMILARITY_BOOST,
     VOICE_STYLE,
     VOICE_USE_SPEAKER_BOOST,
+    DEEPGRAM_LANGUAGE_BY_MOOD,
+    VOICE_ID_BY_MOOD,
 )
 from voice_agent.stt_words import stt_words
 from voice_agent.assistant import Assistant, prewarm
@@ -100,7 +102,7 @@ async def entrypoint(ctx: JobContext):  # noqa: C901 – keep high complexity fo
         mood = ctx.room.name.split("_")[0]
     except ValueError:
         logger.warning("Room name does not contain a mood prefix – using default mood")
-        mood = "excited"  # sensible default
+        mood = "english"  # sensible default
     logger.debug("Conversation mood resolved to '%s'", mood)
 
     # Parse room ID from room name (format: <mood>_room_<roomId>)
@@ -117,7 +119,7 @@ async def entrypoint(ctx: JobContext):  # noqa: C901 – keep high complexity fo
             room_id,
         )
 
-    # Optional: save initial conversation to analytics backend (Devfolio-specific; forks can ignore)
+    # Optional: save initial conversation to analytics backend (legacy Devfolio path; forks can ignore)
     datalayer_base_url = os.environ.get("DATALAYER_BASE_URL")
     datalayer_api_key = os.environ.get("DATALAYER_API_KEY")
     datalayer_path = os.environ.get(
@@ -139,13 +141,13 @@ async def entrypoint(ctx: JobContext):  # noqa: C901 – keep high complexity fo
             logger.error(f"Failed to save initial conversation: {e}")
     else:
         logger.info(
-            "Skipping Devfolio Datalayer API call - required environment variables not defined"
+            "Skipping analytics datalayer call - required environment variables not defined"
         )
 
     greetings = mood_initial_greetings[mood]
 
     # ------------------------------------------------------------------
-    # Prime the agent with Austin's knowledge graph context
+    # Prime the agent with the persona's knowledge graph context
     # ------------------------------------------------------------------
     primed_context = await bonfires.prime_context(mood)
     if primed_context:
@@ -163,12 +165,26 @@ async def entrypoint(ctx: JobContext):  # noqa: C901 – keep high complexity fo
     # ------------------------------------------------------------------
     # Create the Agent session with STT/LLM/TTS building blocks
     # ------------------------------------------------------------------
+    deepgram_language = DEEPGRAM_LANGUAGE_BY_MOOD.get(mood, "en-US")
+    voice_id = VOICE_ID_BY_MOOD.get(mood) or os.environ.get("ELEVEN_VOICE_ID", ELEVENLABS_DEFAULT_VOICE_ID)
+    logger.info("STT language=%s, voice_id=%s (mood=%s)", deepgram_language, voice_id, mood)
+
+    # Deepgram nova-3 `keyterms` are English-only. Skip them for other languages
+    # (the base model still handles loanwords like "DeFi", "smart contract" fine).
+    stt_kwargs: dict = {"model": "nova-3", "language": deepgram_language}
+    if deepgram_language.startswith("en"):
+        stt_kwargs["keyterms"] = stt_words
+
     session = AgentSession(
-        stt=deepgram.STT(model="nova-3", language="en-US", keyterms=stt_words),
-        llm=openai.LLM(model="gpt-5.4-mini"),
+        stt=deepgram.STT(**stt_kwargs),
+        llm=openai.LLM(
+            model=os.environ.get("LLM_MODEL", "openai/gpt-4.1-mini"),
+            base_url=os.environ.get("LLM_BASE_URL", "https://openrouter.ai/api/v1"),
+            api_key=os.environ.get("OPENROUTER_API_KEY") or os.environ.get("OPENAI_API_KEY"),
+        ),
         tts=elevenlabs.TTS(
-            model="eleven_multilingual_v2",
-            voice_id=os.environ.get("ELEVEN_VOICE_ID", ELEVENLABS_DEFAULT_VOICE_ID),
+            model="eleven_flash_v2_5",
+            voice_id=voice_id,
             voice_settings=VoiceSettings(
                 speed=VOICE_SPEED,
                 stability=VOICE_STABILITY,

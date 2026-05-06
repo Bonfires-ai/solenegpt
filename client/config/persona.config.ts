@@ -1,10 +1,10 @@
 export const personaConfig = {
   // App identity
-  appName: 'Austin XBT',
-  tagline: 'Synthesis Agentic Judging',
-  description: 'An AI trained on Austin Griffith to give you real builder feedback on your project idea.',
-  siteUrl: 'https://austinxbt.devfolio.co',
-  blogUrl: 'https://austingriffith.com',
+  appName: 'Solène',
+  tagline: 'Dev3pack Mentor',
+  description: 'Talk to Solène Daviaud, founder of Dev3pack, about your Web3 + AI project.',
+  siteUrl: 'https://dev3pack.xyz',
+  blogUrl: 'https://dev3pack.xyz',
 
   // OG / SEO
   ogImagePath: '/og-image-1.1.png',
@@ -15,75 +15,74 @@ export const personaConfig = {
   },
 
   // Landing page
-  heroTitle: 'Austin XBT',
-  heroSubtitle: 'Synthesis Agentic Judging',
-  heroDescription: "Talk to Austin's AI avatar about your project idea and coin it on Zora.",
+  heroTitle: 'Solène',
+  heroSubtitle: 'Dev3pack Mentor',
+  heroDescription: 'Talk to Solène about your project. Pick English or Français and go.',
   heroAvatarImage: '/avatars/mellow.gif',
-  heroAvatarAlt: 'Austin Avatar',
-  startChatButtonLabel: 'TALK WITH AUSTIN',
+  heroAvatarAlt: 'Solène Avatar',
+  startChatButtonLabel: 'TALK WITH SOLÈNE',
 
   // Footer
   footer: {
-    credit: 'Devfolio',
-    creditUrl: 'https://devfolio.co',
+    credit: 'Dev3pack',
+    creditUrl: 'https://dev3pack.xyz',
     socialLinks: [
-      { label: 'Twitter / X', url: 'https://twitter.com/austingriffith' },
-      { label: 'Farcaster', url: 'https://warpcast.com/austingriffith' },
+      { label: 'Dev3pack', url: 'https://dev3pack.xyz' },
+      { label: 'LinkedIn', url: 'https://fr.linkedin.com/in/solene-daviaud/en' },
     ],
-    githubRepo: 'https://github.com/devfolioco/austingpt',
+    githubRepo: 'https://github.com/ryptoc/austingpt',
   },
 
-  // Moods / personas
+  // Moods / personas — repurposed as language selectors (same warm Solène persona)
   moods: {
-    excited: {
-      label: 'Synthesis',
-      subtitle: 'The enthusiastic builder mentor.',
-      description:
-        'Sees a buidler in everyone, bursting with hackathon energy, & ready to help you ship your first prototype.',
+    english: {
+      label: 'English',
+      subtitle: 'Chat with Solène in English.',
+      description: 'Solène, founder of Dev3pack, ready to talk through your project — in English.',
       avatarImage: '/avatars/happy.gif',
       accentClass: 'bg-synthesis text-white',
       visualizerVariant: 'synthesis' as const,
-      visualizerBgColor: '#16A34A',
-      connectingLabel: 'Enthusiastic Austin',
+      visualizerBgColor: '#A15EED',
+      connectingLabel: 'Solène (English)',
     },
-    critical: {
-      label: 'Tough Love',
-      subtitle: 'The tough-love builder mentor.',
-      description: 'Demands you understand the fundamentals, challenges every assumption.',
+    french: {
+      label: 'Français',
+      subtitle: 'Discutez avec Solène en français.',
+      description: 'Solène, fondatrice de Dev3pack, prête à parler de ton projet — en français.',
       avatarImage: '/avatars/skeptical.gif',
       accentClass: 'bg-synthesis-dark text-white',
       visualizerVariant: 'synthesis' as const,
-      visualizerBgColor: '#15803D',
-      connectingLabel: 'Tough Love Austin',
+      visualizerBgColor: '#7C3AED',
+      connectingLabel: 'Solène (Français)',
     },
   },
 
   // Social share copy templates
   shareCopies: [
-    `Pitched my project to AustinXBT as part of Synthesis Agentic Judging.\n\n"Have you tried building it yet?"\n\nFair point.\n\nTry it here \u2192 austinxbt.devfolio.co\n@devfolio @bonfiresai @synthesis_md`,
-    `AustinXBT: "What does the simplest version look like?"\n\nMe: "...good question."\n\nGreat builder feedback.\nTry it: austinxbt.devfolio.co\n@devfolio @bonfiresai @synthesis_md`,
-    `AustinXBT is like having a hackathon mentor on demand.\n\nPractical advice. Builder energy.\n\nGo vibe \u2192 austinxbt.devfolio.co\n@devfolio @bonfiresai @synthesis_md`,
-    `AustinXBT loved my idea.\n\nNow I have to actually build it.\n\nIf you need builder feedback, try it \u2192 austinxbt.devfolio.co\n@devfolio @bonfiresai @synthesis_md`,
-    `Picked Tough Love on Austin XBT.\n\nGot asked "but why does this need a blockchain?"\n\nOuch. But fair.\n\naustinxbt.devfolio.co\n@devfolio @bonfiresai @synthesis_md`,
+    `Just had a 3-minute mentor session with Solène at @dev3pack.\n\n"What's the smallest version you could ship this week?"\n\nFair point.\n\nTry it → dev3pack.xyz`,
+    `Solène asked me what I'd build first if I had to ship by Sunday.\n\nGreat question.\n\nGo talk to her: dev3pack.xyz\n@dev3pack`,
+    `Pitched my Web3 + AI idea to Solène (Dev3pack founder, AI version).\n\nWalked away with a clearer next step than I had going in.\n\ndev3pack.xyz\n@dev3pack`,
+    `Like having a Dev3pack mentor on demand.\n\nWarm. Practical. Actually useful.\n\nGo vibe → dev3pack.xyz\n@dev3pack`,
+    `Talked to Solène about my project.\n\nNow I have to actually build it.\n\nIf you need builder feedback, try it → dev3pack.xyz\n@dev3pack`,
   ],
 
   shareCopiesWithZora: [
-    `Ran my idea through Austin GPT as part of Synthesis Agentic Judging.\nCame out with a plan to build.\n\nMinted this for the record \u2192 {{zora_link}}\n\n@devfolio @bonfiresai @synthesis_md\n\naustinxbt.devfolio.co`,
-    `Talked to AustinXBT.\nKept the receipts.\n\nMinted \u2192 {{zora_link}}\n\n@devfolio @bonfiresai @synthesis_md\n\naustinxbt.devfolio.co`,
-    `AustinXBT said "just build it."\nSo I'm minting the proof.\n\n\u2192 {{zora_link}}\n\n@devfolio @bonfiresai @synthesis_md\n\naustinxbt.devfolio.co`,
+    `Ran my idea through Solène (@dev3pack, AI version).\nCame out with a plan to build.\n\nMinted this for the record → {{zora_link}}\n\ndev3pack.xyz`,
+    `Talked to Solène at Dev3pack.\nKept the receipts.\n\nMinted → {{zora_link}}\n\ndev3pack.xyz`,
+    `Solène said "just build it."\nSo I'm minting the proof.\n\n→ {{zora_link}}\n\ndev3pack.xyz`,
   ],
 
-  // Wallet metadata (for Reown AppKit)
+  // Wallet metadata (only used if Zora minting / wallet flows are enabled)
   walletMetadata: {
-    name: 'synthesis',
-    description: 'Talk to Austin Griffith',
-    url: 'https://austinxbt.devfolio.co',
+    name: 'Solène (Dev3pack)',
+    description: 'Talk to Solène Daviaud, founder of Dev3pack',
+    url: 'https://dev3pack.xyz',
     icons: ['https://avatars.githubusercontent.com/u/2653167'],
   },
 
   // Share frame
   shareFrame: {
-    prompt: '> synthesizing_',
+    prompt: '> dev3pack_',
     excitedAvatarImage: '/frame/austin-t-excited.png',
     criticalAvatarImage: '/frame/austin-t-critical.png',
   },

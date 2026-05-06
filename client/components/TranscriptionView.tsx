@@ -114,7 +114,32 @@ import * as React from 'react';
 // };
 
 const sanitizeText = (text: string) => {
-  return text.replaceAll(/[*"'`~#>]/g, '');
+  // Strip markdown-ish chars only. Keep apostrophes — "we've" must stay "we've".
+  return text.replaceAll(/[*"`~#>]/g, '');
+};
+
+interface Segment {
+  id: string;
+  text: string;
+  role: 'assistant' | 'user';
+}
+
+/**
+ * Deepgram finalises a new segment each time the speaker pauses briefly,
+ * which would render every breath as a separate bubble. Merge consecutive
+ * same-role segments into a single bubble to match natural speech.
+ */
+const mergeConsecutiveSegments = <T extends Segment>(segments: T[]): T[] => {
+  const merged: T[] = [];
+  for (const seg of segments) {
+    const last = merged[merged.length - 1];
+    if (last && last.role === seg.role) {
+      last.text = `${last.text} ${seg.text}`.replace(/\s+/g, ' ').trim();
+    } else {
+      merged.push({ ...seg });
+    }
+  }
+  return merged;
 };
 
 export default function TranscriptionView({ mood }: { mood: AgentMoodI }) {
@@ -126,12 +151,14 @@ export default function TranscriptionView({ mood }: { mood: AgentMoodI }) {
 
   const lastScrolledID = React.useRef<string | null>(null);
 
-  // for testing only
-  // const combinedTranscriptions = useTestTranscriptions();
+  const mergedTranscriptions = React.useMemo(
+    () => mergeConsecutiveSegments(combinedTranscriptions),
+    [combinedTranscriptions]
+  );
 
   // scroll to bottom when new transcription is added
   React.useEffect(() => {
-    const transcription = combinedTranscriptions[combinedTranscriptions.length - 1];
+    const transcription = mergedTranscriptions[mergedTranscriptions.length - 1];
     if (transcription && transcription.id !== lastScrolledID.current) {
       const transcriptionElement = document.getElementById(transcription.id);
       if (transcriptionElement) {
@@ -145,16 +172,16 @@ export default function TranscriptionView({ mood }: { mood: AgentMoodI }) {
         transcriptionElement.scrollIntoView({ behavior: 'smooth' });
       }
     }
-  }, [combinedTranscriptions, isThinking]);
+  }, [mergedTranscriptions, isThinking]);
 
-  const onlyAssistantTranscriptions = combinedTranscriptions.filter(segment => segment.role === 'assistant');
+  const onlyAssistantTranscriptions = mergedTranscriptions.filter(segment => segment.role === 'assistant');
   const lastAssistantTranscription = onlyAssistantTranscriptions[onlyAssistantTranscriptions.length - 1];
 
-  const onlyUserTranscriptions = combinedTranscriptions.filter(segment => segment.role === 'user');
+  const onlyUserTranscriptions = mergedTranscriptions.filter(segment => segment.role === 'user');
   const lastUserTranscription = onlyUserTranscriptions[onlyUserTranscriptions.length - 1];
 
   const preventAutoScrollOnHumanScroll = () => {
-    const transcription = combinedTranscriptions[combinedTranscriptions.length - 1];
+    const transcription = mergedTranscriptions[mergedTranscriptions.length - 1];
     if (transcription) lastScrolledID.current = transcription.id;
   };
 
@@ -164,7 +191,7 @@ export default function TranscriptionView({ mood }: { mood: AgentMoodI }) {
       onWheel={preventAutoScrollOnHumanScroll}
       onTouchStart={preventAutoScrollOnHumanScroll}
     >
-      {combinedTranscriptions.map(segment => (
+      {mergedTranscriptions.map(segment => (
         <ChatBubble
           key={segment.id}
           id={segment.id}
@@ -202,7 +229,7 @@ const ChatBubble = ({
       id={id}
       className={clsx(
         role === 'assistant'
-          ? `assistant-bubble rounded-2xl px-6 py-4 self-start md:max-w-[70%] max-w-[90%] shadow-md font-medium md:font-normal text-sm md:text-lg bg-[#16A34A] text-white ${isLast ? 'rounded-tl-none' : ''}`
+          ? `assistant-bubble rounded-2xl px-6 py-4 self-start md:max-w-[70%] max-w-[90%] shadow-md font-medium md:font-normal text-sm md:text-lg bg-[#A15EED] text-white ${isLast ? 'rounded-tl-none' : ''}`
           : `user-bubble bg-white text-[#273339] border border-[#E4EAEB] rounded-2xl px-6 py-4 self-end md:max-w-[70%] font-medium md:font-normal max-w-[90%] shadow-md text-sm md:text-lg ${isLast ? 'rounded-br-none' : ''}`
       )}
       style={{ wordBreak: 'break-word', whiteSpace: 'pre-line' }}

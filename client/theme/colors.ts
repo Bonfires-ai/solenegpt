@@ -1,8 +1,8 @@
 const colors = {
   // project theme colors
-  synthesis: '#16A34A',
-  'synthesis-dark': '#15803D',
-  'synthesis-light': '#22C55E',
+  synthesis: '#A15EED',
+  'synthesis-dark': '#7C3AED',
+  'synthesis-light': '#C4A2F5',
   optimism: '#FFF68E',
   critical: '#0157FA',
   danger: '#F06444',

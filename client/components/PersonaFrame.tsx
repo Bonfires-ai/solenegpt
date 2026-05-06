@@ -16,11 +16,27 @@ const frameHeight = 340;
 
 const MAX_IDEA_WIDTH = 460;
 
-const GREEN = '#16A34A';
+const GREEN = '#A15EED';
 const BG = '#FAFAFA';
 const TEXT_DARK = '#111111';
 const TEXT_MID = '#6B7280';
 const INCONSOLATA = `${inconsolata.style.fontFamily}, monospace`;
+
+const DEV3PACK_LOGO_SRC = '/dev3pack-logo.jpg';
+const DEV3PACK_LOGO_HEIGHT = 28; // px on canvas
+
+let dev3packLogoPromise: Promise<HTMLImageElement> | null = null;
+function loadDev3packLogo(): Promise<HTMLImageElement> {
+  if (!dev3packLogoPromise) {
+    dev3packLogoPromise = new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = err => reject(err);
+      img.src = DEV3PACK_LOGO_SRC;
+    });
+  }
+  return dev3packLogoPromise;
+}
 
 function resizeCanvas(canvas: HTMLCanvasElement) {
   const { devicePixelRatio: ratio = 1 } = window;
@@ -108,11 +124,21 @@ const drawFrame = async (
   ctx.fillRect(ideaX - underlineWidth / 2, ideaY + 12, underlineWidth, 4);
 
   // === BOTTOM BRANDING ===
-  ctx.font = `600 9px ${INCONSOLATA}`;
-  ctx.fillStyle = GREEN;
-  ctx.textAlign = 'right';
-  ctx.letterSpacing = '3px';
-  ctx.fillText('S Y N T H E S I S', width - 32, height - 24);
+  // Bottom-right: Dev3pack logo
+  try {
+    const logo = await loadDev3packLogo();
+    const aspect = logo.width / logo.height;
+    const drawHeight = DEV3PACK_LOGO_HEIGHT;
+    const drawWidth = drawHeight * aspect;
+    ctx.drawImage(logo, width - 32 - drawWidth, height - 32, drawWidth, drawHeight);
+  } catch {
+    // If the logo fails to load, fall back to text so the frame is still usable.
+    ctx.font = `600 9px ${INCONSOLATA}`;
+    ctx.fillStyle = GREEN;
+    ctx.textAlign = 'right';
+    ctx.letterSpacing = '3px';
+    ctx.fillText('D E V 3 P A C K', width - 32, height - 24);
+  }
 
   // Bottom-left small accent + domain below
   ctx.fillStyle = GREEN;
@@ -120,7 +146,7 @@ const drawFrame = async (
   ctx.font = `400 9px ${INCONSOLATA}`;
   ctx.fillStyle = '#B0B7BC';
   ctx.textAlign = 'left';
-  ctx.fillText('austinxbt.devfolio.co', 36, height - 18);
+  ctx.fillText('dev3pack.xyz', 36, height - 18);
 };
 
 const PersonaFrame = ({ idea, onImageReady, onError, mood, className }: PersonaFrameProps) => {
@@ -129,7 +155,7 @@ const PersonaFrame = ({ idea, onImageReady, onError, mood, className }: PersonaF
   const handleDownload = () => {
     if (canvasRef.current) {
       const link = document.createElement('a');
-      link.download = `synthesis-${idea.toLowerCase().replace(/\s+/g, '-')}.png`;
+      link.download = `solene-${idea.toLowerCase().replace(/\s+/g, '-')}.png`;
       link.href = canvasRef.current.toDataURL('image/png');
       document.body.appendChild(link);
       link.click();
@@ -190,6 +216,10 @@ const PersonaFrame = ({ idea, onImageReady, onError, mood, className }: PersonaF
 };
 
 export const PrefetchPersonaFrameAssets = () => {
+  // Trigger preload so the canvas draw doesn't block on first paint.
+  if (typeof window !== 'undefined') {
+    void loadDev3packLogo();
+  }
   return null;
 };
 

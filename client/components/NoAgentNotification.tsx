@@ -57,11 +57,14 @@ export function NoAgentNotification(props: NoAgentNotificationProps) {
           <a
             href="https://docs.livekit.io/agents/quickstarts/s2s/"
             target="_blank"
-            className="underline whitespace-nowrap text-[#16A34A] hover:text-[#15803D]"
+            className="underline whitespace-nowrap text-[#A15EED] hover:text-[#7C3AED]"
           >
             View guide
           </a>
-          <button onClick={() => setShowNotification(false)} className="text-[#8E989C] hover:text-[#171D21] transition-colors">
+          <button
+            onClick={() => setShowNotification(false)}
+            className="text-[#8E989C] hover:text-[#171D21] transition-colors"
+          >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
                 d="M3.16602 3.16666L12.8327 12.8333M12.8327 3.16666L3.16602 12.8333"

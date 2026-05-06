@@ -9,7 +9,10 @@ interface AudioVisualizerProps {
   variant?: 'critical' | 'optimism' | 'synthesis';
 }
 
-const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ state: activeState = 'speaking', variant = 'synthesis' }) => {
+const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
+  state: activeState = 'speaking',
+  variant = 'synthesis',
+}) => {
   const getVariant = (duration: number) => {
     const delay = undefined;
 

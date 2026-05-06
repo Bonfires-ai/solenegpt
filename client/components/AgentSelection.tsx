@@ -11,7 +11,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
-const getMoodKey = (mood: AgentMoodI) => (mood === AgentMoodEnum.CRITICAL ? 'critical' : 'excited');
+const getMoodKey = (mood: AgentMoodI) => (mood === AgentMoodEnum.FRENCH ? 'french' : 'english');
 
 interface AgentSelectionProps extends React.HTMLAttributes<HTMLDivElement> {
   onClose?: () => void;
@@ -43,10 +43,10 @@ export const AgentSelection = ({ onClose, ...props }: AgentSelectionProps) => {
           transition={{ delay: 0.1 }}
           className="text-sm font-inter font-medium tracking-[0.2em] uppercase text-[#8E989C] mb-4"
         >
-          Choose your mode
+          Choose your language
         </motion.h2>
 
-        {[AgentMoodEnum.EXCITED, AgentMoodEnum.CRITICAL].map((mood, i) => {
+        {[AgentMoodEnum.ENGLISH, AgentMoodEnum.FRENCH].map((mood, i) => {
           const moodKey = getMoodKey(mood);
           const moodConfig = personaConfig.moods[moodKey];
           return (
@@ -56,7 +56,7 @@ export const AgentSelection = ({ onClose, ...props }: AgentSelectionProps) => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 + i * 0.1 }}
               onClick={() => handleMoodSelection(mood)}
-              className="w-full max-w-xs bg-white border border-[#E4EAEB] rounded-lg p-6 flex flex-col items-center gap-3 hover:border-[#16A34A] transition-colors active:scale-[0.98]"
+              className="w-full max-w-xs bg-white border border-[#E4EAEB] rounded-lg p-6 flex flex-col items-center gap-3 hover:border-[#A15EED] transition-colors active:scale-[0.98]"
             >
               <Image
                 src={moodConfig.avatarImage}
@@ -69,9 +69,7 @@ export const AgentSelection = ({ onClose, ...props }: AgentSelectionProps) => {
               <span className="text-xl font-inter font-bold tracking-[0.08em] uppercase text-[#171D21]">
                 {moodConfig.label}
               </span>
-              <span className="text-sm font-inter text-[#8E989C]">
-                {moodConfig.subtitle}
-              </span>
+              <span className="text-sm font-inter text-[#8E989C]">{moodConfig.subtitle}</span>
             </motion.button>
           );
         })}
@@ -88,14 +86,14 @@ export const AgentSelection = ({ onClose, ...props }: AgentSelectionProps) => {
         transition={{ delay: 0.1 }}
         className="text-sm font-inter font-medium tracking-[0.25em] uppercase text-[#8E989C] mb-12"
       >
-        Choose your mode
+        Choose your language
       </motion.h2>
 
       <div className="w-full max-w-4xl flex flex-col md:flex-row md:items-start items-center justify-center gap-8 md:gap-12">
-        {/* Synthesis (Enthusiastic) */}
-        {((isPhone && selectedMood === AgentMoodEnum.EXCITED) || !isPhone) && (
+        {/* English */}
+        {((isPhone && selectedMood === AgentMoodEnum.ENGLISH) || !isPhone) && (
           <PersonaCard
-            mood={AgentMoodEnum.EXCITED}
+            mood={AgentMoodEnum.ENGLISH}
             onMoodSelection={updateMood}
             isPhone={isPhone}
             onBack={() => setSelectedMood(null)}
@@ -113,10 +111,10 @@ export const AgentSelection = ({ onClose, ...props }: AgentSelectionProps) => {
           />
         )}
 
-        {/* Tough Love (Critical) */}
-        {((isPhone && selectedMood === AgentMoodEnum.CRITICAL) || !isPhone) && (
+        {/* Français */}
+        {((isPhone && selectedMood === AgentMoodEnum.FRENCH) || !isPhone) && (
           <PersonaCard
-            mood={AgentMoodEnum.CRITICAL}
+            mood={AgentMoodEnum.FRENCH}
             onMoodSelection={updateMood}
             isPhone={isPhone}
             onBack={() => setSelectedMood(null)}
@@ -178,7 +176,7 @@ const PersonaCard = ({
         onClick={() => onMoodSelection(mood)}
         className={clsx(
           'mt-8 flex items-center justify-center gap-2.5 py-3.5 px-10 rounded-none font-inter font-semibold text-base tracking-[0.1em] uppercase transition-all',
-          'text-white bg-[#16A34A] hover:bg-[#15803D] active:scale-[0.97]',
+          'text-white bg-[#A15EED] hover:bg-[#7C3AED] active:scale-[0.97]',
           isPhone && 'w-full'
         )}
       >

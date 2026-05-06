@@ -279,7 +279,7 @@ const ShareModal = ({ data: initialData, onClose, mood, isOpen, roomId }: ShareM
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                           <motion.path
                             d="M3 8.5L6.5 12L13 4"
-                            stroke="#16A34A"
+                            stroke="#A15EED"
                             strokeWidth="2.5"
                             strokeLinecap="round"
                             strokeLinejoin="round"
@@ -298,7 +298,16 @@ const ShareModal = ({ data: initialData, onClose, mood, isOpen, roomId }: ShareM
                 {!editMode && !imageCopied && (
                   <div className="absolute top-3 right-3 md:top-4 md:right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
                     <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-sm rounded-full px-3 py-1.5">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="white"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                       </svg>
@@ -327,7 +336,7 @@ const ShareModal = ({ data: initialData, onClose, mood, isOpen, roomId }: ShareM
             <div className="flex flex-col md:flex-row gap-3 items-center w-full mt-2">
               <Button
                 appearance="colored"
-                className="bg-[#16A34A] text-white hover:bg-[#15803D]"
+                className="bg-[#A15EED] text-white hover:bg-[#7C3AED]"
                 onClick={handleChatAgain}
                 stretch
               >
@@ -362,12 +371,7 @@ const ShareModal = ({ data: initialData, onClose, mood, isOpen, roomId }: ShareM
             </div>
 
             <div className="flex flex-col md:flex-row gap-3 items-center w-full">
-              <Button
-                appearance="colored"
-                className="bg-farcaster text-white"
-                onClick={handleFarcaster}
-                stretch
-              >
+              <Button appearance="colored" className="bg-farcaster text-white" onClick={handleFarcaster} stretch>
                 <FarcasterIcon />
                 Cast
               </Button>
@@ -400,7 +404,7 @@ const ShareModal = ({ data: initialData, onClose, mood, isOpen, roomId }: ShareM
               {isZoraMintingEnabled && zoraSuccessToastVisible && (
                 <Snackbar appearance="success">
                   Your idea has been successfully coined on Zora.{' '}
-                  <a href={zoraResult?.zoraLink ?? ''} target="_blank" className="underline text-[#16A34A]">
+                  <a href={zoraResult?.zoraLink ?? ''} target="_blank" className="underline text-[#A15EED]">
                     Check it out here.
                   </a>
                 </Snackbar>
