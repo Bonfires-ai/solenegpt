@@ -29,17 +29,30 @@ const stepLabels: Record<VoiceSessionStep, string> = {
   ERROR: 'Something went wrong',
 };
 
+const freeModeStepLabels: Record<VoiceSessionStep, string> = {
+  DISCONNECTED: 'Ready to start',
+  WALLET_CONNECTED: 'Ready to start',
+  SIGNING: 'Starting\u2026',
+  PAYMENT_PENDING: 'Starting\u2026',
+  SESSION_READY: 'Session ready',
+  IN_SESSION: 'In session',
+  ENDED: 'Session ended',
+  ERROR: 'Something went wrong',
+};
+
 export function PaymentGate({ mood, onSessionReady }: PaymentGateProps) {
   const moodKey = getMoodKey(mood);
   const moodConfig = personaConfig.moods[moodKey];
 
-  const { step, error, sessionToken, connectWallet, startPayment, reset, isLoading, isConnected } = useVoiceSession();
+  const { step, error, sessionToken, connectWallet, startPayment, reset, isLoading, isConnected, paymentsDisabled } =
+    useVoiceSession();
 
   useEffect(() => {
+    if (paymentsDisabled) return;
     if (isConnected && step === 'DISCONNECTED') {
       connectWallet();
     }
-  }, [isConnected, step, connectWallet]);
+  }, [isConnected, step, connectWallet, paymentsDisabled]);
 
   useEffect(() => {
     if (step === 'SESSION_READY' && sessionToken) {
@@ -91,27 +104,31 @@ export function PaymentGate({ mood, onSessionReady }: PaymentGateProps) {
           {moodConfig.label}
         </motion.h1>
 
-        {/* Price tag */}
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.4 }}
-          className="mt-4 flex items-center gap-2"
-        >
-          <span className="text-[#8E989C] font-inter text-sm tracking-wide uppercase">Session</span>
-          <span className="font-mono text-sm font-bold px-2.5 py-0.5 rounded-full bg-[#A15EED] text-white">
-            ${PAYMENT_AMOUNT} USDC
-          </span>
-        </motion.div>
+        {/* Price tag — hidden in free mode */}
+        {!paymentsDisabled && (
+          <>
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.4 }}
+              className="mt-4 flex items-center gap-2"
+            >
+              <span className="text-[#8E989C] font-inter text-sm tracking-wide uppercase">Session</span>
+              <span className="font-mono text-sm font-bold px-2.5 py-0.5 rounded-full bg-[#A15EED] text-white">
+                ${PAYMENT_AMOUNT} USDC
+              </span>
+            </motion.div>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.35, duration: 0.3 }}
-          className="mt-2 text-[#B4BEC0] font-inter text-xs"
-        >
-          Covers the cost of AI compute for your session.
-        </motion.p>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.35, duration: 0.3 }}
+              className="mt-2 text-[#B4BEC0] font-inter text-xs"
+            >
+              Covers the cost of AI compute for your session.
+            </motion.p>
+          </>
+        )}
 
         {/* Status line */}
         <motion.p
@@ -128,7 +145,7 @@ export function PaymentGate({ mood, onSessionReady }: PaymentGateProps) {
               exit={{ opacity: 0, y: -4 }}
               transition={{ duration: 0.2 }}
             >
-              {stepLabels[step]}
+              {(paymentsDisabled ? freeModeStepLabels : stepLabels)[step]}
             </motion.span>
           </AnimatePresence>
         </motion.p>
@@ -168,7 +185,7 @@ export function PaymentGate({ mood, onSessionReady }: PaymentGateProps) {
           className="mt-8 w-full"
         >
           <AnimatePresence mode="wait">
-            {step === 'DISCONNECTED' && (
+            {step === 'DISCONNECTED' && !paymentsDisabled && (
               <motion.button
                 key="connect"
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -199,7 +216,7 @@ export function PaymentGate({ mood, onSessionReady }: PaymentGateProps) {
                   'bg-[#A15EED] text-white hover:bg-[#7C3AED]'
                 )}
               >
-                Pay & Start Session
+                {paymentsDisabled ? 'Start Session' : 'Pay & Start Session'}
               </motion.button>
             )}
 
@@ -213,7 +230,11 @@ export function PaymentGate({ mood, onSessionReady }: PaymentGateProps) {
               >
                 <div className="w-8 h-8 border-2 border-[#A15EED]/40 border-t-transparent rounded-full animate-spin" />
                 <span className="text-[#8E989C] font-inter text-xs">
-                  {step === 'SIGNING' ? 'Waiting for wallet signature\u2026' : 'Processing payment\u2026'}
+                  {paymentsDisabled
+                    ? 'Starting session\u2026'
+                    : step === 'SIGNING'
+                      ? 'Waiting for wallet signature\u2026'
+                      : 'Processing payment\u2026'}
                 </span>
               </motion.div>
             )}
@@ -280,9 +301,15 @@ export function PaymentGate({ mood, onSessionReady }: PaymentGateProps) {
           transition={{ delay: 0.7, duration: 0.4 }}
           className="mt-10 text-[#B4BEC0] font-inter text-[11px] leading-relaxed max-w-xs"
         >
-          Powered by x402 micropayments on Solana.
-          <br />
-          Session tokens are single-use and expire after 10 minutes.
+          {paymentsDisabled ? (
+            <>Free session mode (payments disabled).</>
+          ) : (
+            <>
+              Powered by x402 micropayments on Solana.
+              <br />
+              Session tokens are single-use and expire after 10 minutes.
+            </>
+          )}
         </motion.p>
       </motion.div>
     </main>

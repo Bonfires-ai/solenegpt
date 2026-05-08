@@ -37,6 +37,7 @@ interface VoiceSessionResponse {
 }
 
 const PAID_ENDPOINT = '/api/paid/voice/session';
+const PAYMENTS_DISABLED = process.env.NEXT_PUBLIC_DISABLE_X402 === 'true';
 
 export interface UseVoiceSessionReturn {
   step: VoiceSessionStep;
@@ -44,6 +45,7 @@ export interface UseVoiceSessionReturn {
   sessionToken: string | null;
   txHash: string | null;
   isConnected: boolean;
+  paymentsDisabled: boolean;
   connectWallet: () => void;
   startPayment: () => Promise<void>;
   reset: () => void;
@@ -55,7 +57,7 @@ export function useVoiceSession(): UseVoiceSessionReturn {
   const wallet = useWallet();
   const { setVisible } = useWalletModal();
 
-  const [step, setStep] = useState<VoiceSessionStep>('DISCONNECTED');
+  const [step, setStep] = useState<VoiceSessionStep>(PAYMENTS_DISABLED ? 'WALLET_CONNECTED' : 'DISCONNECTED');
   const [error, setError] = useState<string | null>(null);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
@@ -71,7 +73,7 @@ export function useVoiceSession(): UseVoiceSessionReturn {
   }, [isConnected, setVisible]);
 
   const startPayment = useCallback(async () => {
-    if (!wallet.publicKey) {
+    if (!PAYMENTS_DISABLED && !wallet.publicKey) {
       setError('Connect your wallet first.');
       return;
     }
@@ -149,7 +151,7 @@ export function useVoiceSession(): UseVoiceSessionReturn {
   }, [connection, wallet]);
 
   const reset = useCallback(() => {
-    setStep(isConnected ? 'WALLET_CONNECTED' : 'DISCONNECTED');
+    setStep(PAYMENTS_DISABLED || isConnected ? 'WALLET_CONNECTED' : 'DISCONNECTED');
     setError(null);
     setSessionToken(null);
     setTxHash(null);
@@ -163,6 +165,7 @@ export function useVoiceSession(): UseVoiceSessionReturn {
     sessionToken,
     txHash,
     isConnected,
+    paymentsDisabled: PAYMENTS_DISABLED,
     connectWallet,
     startPayment,
     reset,

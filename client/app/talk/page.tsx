@@ -21,8 +21,10 @@ import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import type { ConnectionDetails } from '../api/connection-details/route';
 
 // When true, render <PaymentGate /> (which calls /api/paid/voice/session for a JWT).
-// When false, skip the gate entirely and connect to LiveKit directly.
-const PAYMENT_GATE_ENABLED = process.env.NEXT_PUBLIC_PAYMENT_GATE === 'true';
+// Free-session mode (NEXT_PUBLIC_DISABLE_X402=true) still needs the gate so we
+// can mint the JWT that /api/connection-details requires when VOICE_SESSION_JWT_SECRET is set.
+const PAYMENTS_DISABLED = process.env.NEXT_PUBLIC_DISABLE_X402 === 'true';
+const PAYMENT_GATE_ENABLED = process.env.NEXT_PUBLIC_PAYMENT_GATE === 'true' || PAYMENTS_DISABLED;
 
 const parseMoodQueryParam = (query: string | string[] | null): AgentMoodI | null => {
   if (typeof query === 'string') {
