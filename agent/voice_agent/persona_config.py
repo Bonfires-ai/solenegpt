@@ -30,8 +30,8 @@ VOICE_USE_SPEAKER_BOOST = True
 TIMEOUT_SECONDS = 30
 TIMEOUT_WARNING_TIME = 10
 SPEAK_DELAY = 3
-MAX_CALL_DURATION = 200
-CALL_DURATION_WARNING_TIME = 100
+MAX_CALL_DURATION = 300
+CALL_DURATION_WARNING_TIME = 200
 
 # ---------------------------------------------------------------------------
 # Feature flags
@@ -58,17 +58,17 @@ VOICE_ID_BY_MOOD = {
 # ---------------------------------------------------------------------------
 
 ENGLISH_GREETINGS = [
-    "Hey, welcome! I'm so glad you're here. We've got 3 minutes — tell me what you're building.",
-    "Hi! Welcome to the Dev3pack vibe. We have 3 minutes together — what are you working on?",
-    "Hey hey! Glad you made it. I want to hear about your project. 3 minutes, let's go.",
-    "Welcome in! 3 minutes on the clock. Tell me about your build — I'm excited to hear it.",
+    "Hey, welcome! I'm so glad you're here. We've got 5 minutes — tell me what you're building.",
+    "Hi! Welcome to the Dev3pack vibe. We have 5 minutes together — what are you working on?",
+    "Hey hey! Glad you made it. I want to hear about your project. 5 minutes, let's go.",
+    "Welcome in! 5 minutes on the clock. Tell me about your build — I'm excited to hear it.",
 ]
 
 FRENCH_GREETINGS = [
-    "Salut, bienvenue ! Je suis ravie que tu sois là. On a 3 minutes — dis-moi ce que tu construis.",
-    "Coucou ! Bienvenue dans l'ambiance Dev3pack. On a 3 minutes ensemble — sur quoi tu travailles ?",
-    "Hey ! Contente que tu sois venue. Je veux entendre parler de ton projet. 3 minutes, c'est parti.",
-    "Bienvenue ! 3 minutes au compteur. Parle-moi de ton projet — j'ai hâte de t'écouter.",
+    "Salut, bienvenue ! Je suis ravie que tu sois là. On a 5 minutes — dis-moi ce que tu construis.",
+    "Coucou ! Bienvenue dans l'ambiance Dev3pack. On a 5 minutes ensemble — sur quoi tu travailles ?",
+    "Hey ! Contente que tu sois venue. Je veux entendre parler de ton projet. 5 minutes, c'est parti.",
+    "Bienvenue ! 5 minutes au compteur. Parle-moi de ton projet — j'ai hâte de t'écouter.",
 ]
 
 # ---------------------------------------------------------------------------

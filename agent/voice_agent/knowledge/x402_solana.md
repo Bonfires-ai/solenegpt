@@ -43,4 +43,4 @@ paid RPC like Helius for production — the public mainnet RPC will rate-limit
 you under any real traffic.
 
 This whole site uses x402 for the voice session. You pay 0.20 USDC, you get
-10 minutes with me. Pretty cool.
+5 minutes with me. Pretty cool.
