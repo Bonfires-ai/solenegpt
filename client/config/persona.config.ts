@@ -59,7 +59,7 @@ export const personaConfig = {
 
   // Social share copy templates
   shareCopies: [
-    `Just had a 3-minute mentor session with Solène at @dev3pack.\n\n"What's the smallest version you could ship this week?"\n\nFair point.\n\nTry it → dev3pack.xyz`,
+    `Just had a 5-minute mentor session with Solène at @dev3pack.\n\n"What's the smallest version you could ship this week?"\n\nFair point.\n\nTry it → dev3pack.xyz`,
     `Solène asked me what I'd build first if I had to ship by Sunday.\n\nGreat question.\n\nGo talk to her: dev3pack.xyz\n@dev3pack`,
     `Pitched my Web3 + AI idea to Solène (Dev3pack founder, AI version).\n\nWalked away with a clearer next step than I had going in.\n\ndev3pack.xyz\n@dev3pack`,
     `Like having a Dev3pack mentor on demand.\n\nWarm. Practical. Actually useful.\n\nGo vibe → dev3pack.xyz\n@dev3pack`,
