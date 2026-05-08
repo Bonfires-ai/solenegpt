@@ -124,8 +124,13 @@ Open [http://localhost:3000](http://localhost:3000), pick a language, hit Connec
 | `FACILITATOR_KEYPAIR_SECRET` | Base58 secret key for the facilitator (pays Solana tx fees) |
 | `VOICE_SESSION_JWT_SECRET` | HMAC secret for minting single-use session tokens |
 | `NEXT_PUBLIC_PAYMENT_DEFAULT_AMOUNT` | Session price in USD (default `0.20`) |
+| `NEXT_PUBLIC_DISABLE_X402` | `true` to disable wallet + payment entirely (free sessions; useful for demos / workshops). Default `false`. |
 
 If using `X402_FACILITATOR=coinbase`, also set `CDP_API_KEY_ID` and `CDP_API_KEY_SECRET` from [portal.cdp.coinbase.com](https://portal.cdp.coinbase.com).
+
+#### Free-session mode
+
+Set `NEXT_PUBLIC_DISABLE_X402=true` to bypass x402 entirely. The payment gate becomes a single **Start Session** button — no wallet, no signing, no on-chain settlement. The server still mints a single-use JWT for the LiveKit gate so the rest of the flow is unchanged. Use this for hackathon demos, workshops, or pre-launch testing.
 
 ### Voice clones
 

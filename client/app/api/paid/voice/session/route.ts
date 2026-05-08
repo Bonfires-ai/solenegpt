@@ -19,6 +19,19 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 const SESSION_TTL_SECONDS = 600;
+const PAYMENTS_DISABLED = process.env.NEXT_PUBLIC_DISABLE_X402 === 'true';
+
+async function mintSessionToken(jwtSecret: string) {
+  const secret = new TextEncoder().encode(jwtSecret);
+  const sessionToken = await new SignJWT({ session_type: 'voice' })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setSubject(randomUUID())
+    .setJti(randomUUID())
+    .setIssuedAt()
+    .setExpirationTime(`${SESSION_TTL_SECONDS}s`)
+    .sign(secret);
+  return { session_token: sessionToken, expires_in: SESSION_TTL_SECONDS };
+}
 
 function buildRequirements(feePayer: string): PaymentRequirements {
   const isMainnet = (process.env.NEXT_PUBLIC_SOLANA_NETWORK ?? 'devnet').toLowerCase() === 'mainnet';
@@ -40,6 +53,13 @@ export async function POST(req: NextRequest) {
   if (!jwtSecret) {
     return NextResponse.json({ error: 'VOICE_SESSION_JWT_SECRET not configured' }, { status: 500 });
   }
+
+  // Free-session bypass — skip wallet/x402/facilitator entirely. Mint the JWT
+  // and return 200 so the existing client `if (probe.ok)` branch picks it up.
+  if (PAYMENTS_DISABLED) {
+    return NextResponse.json(await mintSessionToken(jwtSecret));
+  }
+
   if (!process.env.SOLANA_RECIPIENT_ADDRESS) {
     return NextResponse.json({ error: 'SOLANA_RECIPIENT_ADDRESS not configured' }, { status: 500 });
   }
@@ -93,18 +113,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: settleResult.error ?? 'Settlement failed' }, { status: 502 });
   }
 
-  const secret = new TextEncoder().encode(jwtSecret);
-  const sessionToken = await new SignJWT({ session_type: 'voice' })
-    .setProtectedHeader({ alg: 'HS256' })
-    .setSubject(randomUUID())
-    .setJti(randomUUID())
-    .setIssuedAt()
-    .setExpirationTime(`${SESSION_TTL_SECONDS}s`)
-    .sign(secret);
-
-  return NextResponse.json({
-    session_token: sessionToken,
-    expires_in: SESSION_TTL_SECONDS,
-    tx_hash: settleResult.transaction,
-  });
+  const session = await mintSessionToken(jwtSecret);
+  return NextResponse.json({ ...session, tx_hash: settleResult.transaction });
 }
