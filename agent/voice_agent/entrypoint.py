@@ -98,6 +98,16 @@ async def entrypoint(ctx: JobContext):  # noqa: C901 – keep high complexity fo
     logger.info("Connecting to room %s", ctx.room.name)
     await ctx.connect(auto_subscribe=AutoSubscribe.AUDIO_ONLY)
 
+    # When the human leaves (closes tab, drops connection, etc.) tear down
+    # immediately instead of waiting for the idle-timeout / "are you still
+    # there?" prompt to fire into the void. Saves ~40s of useless TTS/LLM
+    # calls per abandoned session and frees the worker subprocess sooner.
+    def _on_participant_disconnected(participant):
+        logger.info("Participant %s disconnected — shutting down", participant.identity)
+        ctx.shutdown(reason="participant_disconnected")
+
+    ctx.room.on("participant_disconnected", _on_participant_disconnected)
+
     try:
         mood = ctx.room.name.split("_")[0]
     except ValueError:
@@ -431,5 +441,20 @@ async def entrypoint(ctx: JobContext):  # noqa: C901 – keep high complexity fo
 
 
 def run_from_cli() -> None:
-    """Spawn a LiveKit worker using :pyfunc:`entrypoint`."""
-    cli.run_app(WorkerOptions(entrypoint_fnc=entrypoint, prewarm_fnc=prewarm))
+    """Spawn a LiveKit worker using :pyfunc:`entrypoint`.
+
+    Tuned for low-concurrency, paid-session workloads on small containers
+    (e.g. Railway hobby): no idle pre-warm pool (was the cause of EAGAIN
+    thread-spawn panics), back-pressure when one session is loaded, hard
+    per-job memory cap so a runaway job dies cleanly instead of leaking
+    threads into the cgroup.
+    """
+    cli.run_app(
+        WorkerOptions(
+            entrypoint_fnc=entrypoint,
+            prewarm_fnc=prewarm,
+            num_idle_processes=0,
+            load_threshold=0.6,
+            job_memory_limit_mb=800,
+        )
+    )
